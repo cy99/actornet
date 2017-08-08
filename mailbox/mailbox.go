@@ -1,8 +1,15 @@
 package mailbox
 
+import "github.com/davyxu/actornet/proto"
+
+type MailReceiver interface {
+	Recv(interface{})
+}
+
 type MailBox interface {
 	Push(interface{})
 	Recv() interface{}
+	Start(MailReceiver)
 }
 
 type Bounded struct {
@@ -16,6 +23,28 @@ func (self *Bounded) Push(data interface{}) {
 func (self *Bounded) Recv() interface{} {
 
 	return <-self.q
+}
+
+func (self *Bounded) Start(mr MailReceiver) {
+
+	go self.recvThread(mr)
+}
+
+func (self *Bounded) recvThread(mr MailReceiver) {
+	for {
+
+		msg := self.Recv()
+
+		switch msg.(type) {
+		case proto.Stop:
+			goto EndRecv
+		default:
+			mr.Recv(msg)
+		}
+
+	}
+
+EndRecv:
 }
 
 func NewBounded(size int) MailBox {
