@@ -1,16 +1,18 @@
 package actor
 
-func SpawnFromFunc(f ActorFunc) *PID {
+func SpawnFromFunc(name string, f ActorFunc) *PID {
 
-	proc := NewLocalProcess(f)
-
-	pid := &PID{
-		ID:   localPIDManager.AllocID(),
-		proc: proc,
+	pid := PID{
+		Address: localPIDManager.Address,
+		Id:      name,
 	}
 
-	proc.Stop()
+	proc := NewLocalProcess(f, pid)
 
-	return pid
+	if err := localPIDManager.Add(proc); err != nil {
+		panic(err)
+	}
+
+	return &proc.pid
 
 }

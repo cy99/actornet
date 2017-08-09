@@ -6,50 +6,56 @@ import (
 )
 
 type Process interface {
-	Send(interface{})
+	Send(sender *PID, data interface{})
 	Stop()
+
+	PID() *PID
 }
 
 type localProcess struct {
 	mailbox mailbox.MailBox
 
-	a Actor
+	pid PID
 
-	thisMsg interface{}
+	a Actor
 }
 
-func (self *localProcess) Send(data interface{}) {
+func (self *localProcess) PID() *PID {
+	return &self.pid
+}
 
-	self.mailbox.Push(data)
+func (self *localProcess) Send(sender *PID, data interface{}) {
+
+	self.mailbox.Push(&mailContext{
+		msg:  data,
+		src:  sender,
+		self: &self.pid,
+	})
 }
 
 func (self *localProcess) Stop() {
 
-	self.Send(&proto.Stop{})
+	self.Send(&self.pid, &proto.Stop{})
 }
 
 func (self *localProcess) Recv(msg interface{}) {
 
-	self.thisMsg = msg
-	self.a.Receive(self)
-	self.thisMsg = nil
+	self.a.Receive(msg.(Context))
 }
 
-func (self *localProcess) Msg() interface{} {
-
-	return self.thisMsg
-}
-
-func NewLocalProcess(a Actor) Process {
+func NewLocalProcess(a Actor, pid PID) *localProcess {
 
 	self := &localProcess{
 		mailbox: mailbox.NewBounded(10),
 		a:       a,
+		pid:     pid,
 	}
+
+	self.pid.proc = self
 
 	self.mailbox.Start(self)
 
-	self.Send(&proto.Start{})
+	self.Send(&self.pid, &proto.Start{})
 
 	return self
 }
