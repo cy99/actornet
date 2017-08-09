@@ -9,7 +9,7 @@ import (
 type PIDManager struct {
 	Address string
 
-	processByID map[PID]Process
+	processByID map[string]Process
 }
 
 func (self *PIDManager) allocID() string {
@@ -19,20 +19,18 @@ func (self *PIDManager) allocID() string {
 
 func (self *PIDManager) Add(p Process) error {
 
-	rawID := p.PID().raw()
-
-	if _, ok := self.processByID[rawID]; ok {
+	if _, ok := self.processByID[p.PID().Id]; ok {
 		return errors.New("Duplicate id")
 	}
 
-	self.processByID[rawID] = p
+	self.processByID[p.PID().Id] = p
 
 	return nil
 }
 
-func (self *PIDManager) Get(pid *PID) Process {
+func (self *PIDManager) Get(id string) Process {
 
-	if proc, ok := self.processByID[pid.raw()]; ok {
+	if proc, ok := self.processByID[id]; ok {
 		return proc
 	}
 
@@ -42,9 +40,9 @@ func (self *PIDManager) Get(pid *PID) Process {
 func NewPIDManager(address string) *PIDManager {
 	return &PIDManager{
 		Address:     address,
-		processByID: make(map[PID]Process),
+		processByID: make(map[string]Process),
 	}
 
 }
 
-var localPIDManager = NewPIDManager("local")
+var LocalPIDManager = NewPIDManager("localhost")

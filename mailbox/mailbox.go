@@ -3,7 +3,7 @@ package mailbox
 import "github.com/davyxu/actornet/proto"
 
 type MailReceiver interface {
-	Recv(interface{})
+	OnRecv(interface{})
 }
 
 type MailBox interface {
@@ -39,7 +39,7 @@ func (self *Bounded) recvThread(mr MailReceiver) {
 		case proto.Stop:
 			goto EndRecv
 		default:
-			mr.Recv(msg)
+			mr.OnRecv(msg)
 		}
 
 	}
