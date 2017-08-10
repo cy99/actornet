@@ -11,14 +11,6 @@ func (self *PID) IsLocal() bool {
 	return LocalPIDManager.Address == self.Address
 }
 
-func (self *PID) raw() PID {
-
-	return PID{
-		Address: self.Address,
-		Id:      self.Id,
-	}
-}
-
 func (self *PID) ref() Process {
 
 	if self.proc != nil {
@@ -26,7 +18,7 @@ func (self *PID) ref() Process {
 	}
 
 	if self.IsLocal() {
-		// 更新Process缓冲
+
 		p := LocalPIDManager.Get(self.Id)
 		if p != nil {
 			self.proc = p
@@ -34,9 +26,25 @@ func (self *PID) ref() Process {
 		}
 
 	} else if RemoteProcessCreator != nil {
-		self.proc = RemoteProcessCreator(self)
-		return self.proc
+
+		mgr := remotePIDManager(self.Address)
+
+		proc := mgr.Get(self.Id)
+
+		if proc == nil {
+			proc = RemoteProcessCreator(self)
+
+			if err := mgr.Add(proc); err != nil {
+				panic(err)
+			}
+		}
+
+		self.proc = proc
+
+		return proc
 	}
+
+	panic("invalid pid to create process")
 
 	return nil
 }
@@ -66,7 +74,5 @@ func NewLocalPID(id string) *PID {
 		Id:      id,
 	}
 }
-
-var Root = NewLocalPID("Root")
 
 var RemoteProcessCreator func(*PID) Process

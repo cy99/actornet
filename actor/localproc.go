@@ -15,13 +15,13 @@ type Process interface {
 type localProcess struct {
 	mailbox mailbox.MailBox
 
-	pid PID
+	pid *PID
 
 	a Actor
 }
 
 func (self *localProcess) PID() *PID {
-	return &self.pid
+	return self.pid
 }
 
 func (self *localProcess) Notify(data interface{}, sender *PID) {
@@ -29,13 +29,13 @@ func (self *localProcess) Notify(data interface{}, sender *PID) {
 	self.mailbox.Push(&mailContext{
 		msg:  data,
 		src:  sender,
-		self: &self.pid,
+		self: self.pid,
 	})
 }
 
 func (self *localProcess) Stop() {
 
-	self.Notify(&proto.Stop{}, &self.pid)
+	self.Notify(&proto.Stop{}, self.pid)
 }
 
 func (self *localProcess) OnRecv(msg interface{}) {
@@ -43,7 +43,7 @@ func (self *localProcess) OnRecv(msg interface{}) {
 	self.a.OnRecv(msg.(Context))
 }
 
-func NewLocalProcess(a Actor, pid PID) *localProcess {
+func newLocalProcess(a Actor, pid *PID) *localProcess {
 
 	self := &localProcess{
 		mailbox: mailbox.NewBounded(10),
@@ -51,11 +51,9 @@ func NewLocalProcess(a Actor, pid PID) *localProcess {
 		pid:     pid,
 	}
 
-	self.pid.proc = self
-
 	self.mailbox.Start(self)
 
-	self.Notify(&proto.Start{}, &self.pid)
+	self.Notify(&proto.Start{}, self.pid)
 
 	return self
 }

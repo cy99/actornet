@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/davyxu/actornet/util"
 	"strconv"
+	"sync"
 )
 
 type PIDManager struct {
@@ -45,4 +46,27 @@ func NewPIDManager(address string) *PIDManager {
 
 }
 
-var LocalPIDManager = NewPIDManager("localhost")
+var (
+	LocalPIDManager = NewPIDManager("localhost")
+
+	pidmgrByAddress      = map[string]*PIDManager{}
+	pidmgrByAddressGuard sync.Mutex
+)
+
+// 找到对应地址的远程pid管理器
+func remotePIDManager(address string) *PIDManager {
+
+	pidmgrByAddressGuard.Lock()
+
+	defer pidmgrByAddressGuard.Unlock()
+
+	if mgr, ok := pidmgrByAddress[address]; ok {
+		return mgr
+	}
+
+	mgr := NewPIDManager(address)
+
+	pidmgrByAddress[address] = mgr
+
+	return mgr
+}
