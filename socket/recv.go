@@ -22,11 +22,17 @@ func onRouter(ev *cellnet.Event) {
 
 	if tgtProc != nil {
 
-		if msg.SourceID != "" {
-			tgtProc.Notify(userMsg, actor.NewPID(address, msg.SourceID))
-		} else {
-			tgtProc.Notify(userMsg, nil)
+		m := &actor.Message{
+			Data:      userMsg,
+			TargetPID: tgtProc.PID(),
+			CallID:    msg.CallID,
 		}
+
+		if msg.SourceID != "" {
+			m.SourcePID = actor.NewPID(address, msg.SourceID)
+		}
+
+		tgtProc.Notify(m)
 
 	} else {
 		log.Errorln("node not found:", msg.TargetID)

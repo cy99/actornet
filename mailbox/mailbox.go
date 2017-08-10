@@ -10,13 +10,26 @@ type MailBox interface {
 	Push(interface{})
 	Recv() interface{}
 	Start(MailReceiver)
+	Hijack(func(interface{}) bool)
 }
 
 type Bounded struct {
 	q chan interface{}
+
+	hijack func(interface{}) bool
+}
+
+func (self *Bounded) Hijack(callback func(interface{}) bool) {
+
+	self.hijack = callback
 }
 
 func (self *Bounded) Push(data interface{}) {
+
+	if self.hijack != nil && self.hijack(data) {
+		return
+	}
+
 	self.q <- data
 }
 

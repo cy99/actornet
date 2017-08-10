@@ -49,9 +49,37 @@ func (self *PID) ref() Process {
 	return nil
 }
 
-func (self *PID) Notify(data interface{}, sender *PID) {
+func (self *PID) Notify(m *Message) {
 
-	self.ref().Notify(data, sender)
+	self.ref().Notify(m)
+}
+
+func (self *PID) NotifyData(data interface{}) {
+
+	self.ref().Notify(&Message{
+		Data:      data,
+		TargetPID: self,
+	})
+}
+
+func (self *PID) NotifyDataBySender(data interface{}, sender *PID) {
+
+	self.ref().Notify(&Message{
+		Data:      data,
+		TargetPID: self,
+		SourcePID: sender,
+	})
+}
+
+func (self *PID) Call(data interface{}, sender *PID) interface{} {
+
+	reply := sender.ref().Call(&Message{
+		Data:      data,
+		TargetPID: self,
+		SourcePID: sender,
+	})
+
+	return reply.Data
 }
 
 func (self *PID) String() string {

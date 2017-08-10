@@ -8,6 +8,8 @@ import (
 
 func TestHelloWorld(t *testing.T) {
 
+	StartSystem()
+
 	var wg sync.WaitGroup
 
 	wg.Add(1)
@@ -16,27 +18,29 @@ func TestHelloWorld(t *testing.T) {
 
 		switch msg := c.Msg().(type) {
 		case string:
-			t.Log(msg)
+			log.Debugln(msg)
 			wg.Done()
 		}
 
 	})
 
-	pid.Notify("hello", nil)
+	pid.NotifyData("hello")
 
 	wg.Wait()
 }
 
 func TestEcho(t *testing.T) {
 
+	StartSystem()
+
 	echoFunc := func(c Context) {
 
 		switch msg := c.Msg().(type) {
 		case string:
-			t.Log("server recv", msg)
+			log.Debugln("server recv", msg)
 
 			if c.Source() != nil {
-				c.Source().Notify(msg, c.Self())
+				c.Source().NotifyDataBySender(msg, c.Self())
 			}
 
 		}
@@ -53,13 +57,54 @@ func TestEcho(t *testing.T) {
 
 		switch data := c.Msg().(type) {
 		case *proto.Start:
-			t.Log("client start")
+			log.Debugln("client start")
 
-			server.Notify("hello", c.Self())
+			server.NotifyDataBySender("hello", c.Self())
 		case string:
-			t.Log("client recv", data)
+			log.Debugln("client recv", data)
 
 			wg.Done()
+		}
+
+	})
+
+	wg.Wait()
+}
+
+func TestRPC(t *testing.T) {
+
+	StartSystem()
+
+	rpcFunc := func(c Context) {
+
+		switch msg := c.Msg().(type) {
+		case string:
+			log.Debugln("server recv", msg, c.Source())
+
+			c.Reply(msg)
+		}
+
+	}
+
+	server := Spawn("server", rpcFunc)
+
+	var wg sync.WaitGroup
+
+	wg.Add(1)
+
+	Spawn("client", func(c Context) {
+
+		switch c.Msg().(type) {
+		case *proto.Start:
+
+			log.Debugln("client call")
+
+			reply := server.Call("hello", c.Self())
+
+			log.Debugln("client recv reply", reply)
+
+			wg.Done()
+
 		}
 
 	})

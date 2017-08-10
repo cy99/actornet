@@ -26,7 +26,7 @@ Actor model based framework for Golang
 - [x] Mailbox
 - [x] 同进程异步消息
 - [x] 跨进程异步消息
-- [ ] 同进程同步消息
+- [x] 同进程同步消息
 - [ ] 跨进程同步消息
 - [ ] 父子节点
 - [ ] 消息响应便捷化

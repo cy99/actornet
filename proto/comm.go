@@ -14,6 +14,7 @@ type Route struct {
 	TargetID string
 	MsgID    uint32
 	MsgData  []byte
+	CallID   int64
 }
 
 func (m *Route) String() string { return goobjfmt.CompactTextString(m) }

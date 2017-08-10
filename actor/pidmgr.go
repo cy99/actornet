@@ -47,7 +47,7 @@ func NewPIDManager(address string) *PIDManager {
 }
 
 var (
-	LocalPIDManager = NewPIDManager("localhost")
+	LocalPIDManager *PIDManager
 
 	pidmgrByAddress      = map[string]*PIDManager{}
 	pidmgrByAddressGuard sync.Mutex
@@ -69,4 +69,16 @@ func remotePIDManager(address string) *PIDManager {
 	pidmgrByAddress[address] = mgr
 
 	return mgr
+}
+
+func init() {
+
+	OnReset.Add(func(...interface{}) error {
+
+		LocalPIDManager = NewPIDManager("localhost")
+		pidmgrByAddress = map[string]*PIDManager{}
+
+		return nil
+	})
+
 }

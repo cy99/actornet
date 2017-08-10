@@ -7,16 +7,17 @@ import (
 )
 
 type socketProcess struct {
-	pid actor.PID
+	pid     actor.PID
+	callseq int64
 }
 
 func (self *socketProcess) PID() *actor.PID {
 	return &self.pid
 }
 
-func (self *socketProcess) Notify(data interface{}, sender *actor.PID) {
+func (self *socketProcess) Notify(m *actor.Message) {
 
-	msgdata, msgid, err := cellnet.EncodeMessage(data)
+	msgdata, msgid, err := cellnet.EncodeMessage(m.Data)
 	if err != nil {
 		log.Errorln(err)
 		return
@@ -26,10 +27,11 @@ func (self *socketProcess) Notify(data interface{}, sender *actor.PID) {
 		TargetID: self.pid.Id,
 		MsgID:    msgid,
 		MsgData:  msgdata,
+		CallID:   m.CallID,
 	}
 
-	if sender != nil {
-		msg.SourceID = sender.Id
+	if m.SourcePID != nil {
+		msg.SourceID = m.SourcePID.Id
 	}
 
 	SendToSession(self.pid.Address, msg)
@@ -37,6 +39,11 @@ func (self *socketProcess) Notify(data interface{}, sender *actor.PID) {
 
 func (self *socketProcess) Stop() {
 
+}
+
+func (self *socketProcess) Call(m *actor.Message) *actor.Message {
+
+	return nil
 }
 
 func init() {

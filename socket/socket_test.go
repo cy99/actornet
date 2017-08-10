@@ -10,6 +10,8 @@ import (
 
 func TestServer(t *testing.T) {
 
+	actor.StartSystem()
+
 	Listen("127.0.0.1:8081", "server")
 
 	var wg sync.WaitGroup
@@ -27,7 +29,7 @@ func TestServer(t *testing.T) {
 
 				if c.Source() != nil {
 					t.Log("send back")
-					c.Source().Notify(msg, c.Self())
+					c.Source().NotifyDataBySender(msg, c.Self())
 				}
 
 			}
@@ -39,6 +41,8 @@ func TestServer(t *testing.T) {
 }
 
 func TestClient(t *testing.T) {
+
+	actor.StartSystem()
 
 	Connect("127.0.0.1:8081", "client")
 
@@ -62,7 +66,7 @@ func TestClient(t *testing.T) {
 	})
 
 	target := actor.NewPID("127.0.0.1:8081", "server")
-	target.Notify(proto.TestMsg{Msg: "hello"}, client)
+	target.NotifyDataBySender(proto.TestMsg{Msg: "hello"}, client)
 
 	wg.Wait()
 }

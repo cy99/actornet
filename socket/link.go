@@ -3,6 +3,7 @@ package socket
 import (
 	"bytes"
 	"fmt"
+	"github.com/davyxu/actornet/actor"
 	"github.com/davyxu/cellnet"
 	"sync"
 )
@@ -11,10 +12,22 @@ import (
 // 管理进程内通过svcid标示的,到各服务器的连接
 // =============================================
 var (
-	sesByAddress = make(map[string]cellnet.Session)
-	addressBySes = make(map[cellnet.Session]string)
+	sesByAddress = map[string]cellnet.Session{}
+	addressBySes = map[cellnet.Session]string{}
 	svclinkGuard sync.RWMutex
 )
+
+func init() {
+
+	actor.OnReset.Add(func(...interface{}) error {
+
+		sesByAddress = map[string]cellnet.Session{}
+		addressBySes = map[cellnet.Session]string{}
+
+		return nil
+	})
+
+}
 
 // 对一个服务器进程来说, 连到其他服务的, 只有1个
 

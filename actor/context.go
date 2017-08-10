@@ -6,22 +6,35 @@ type Context interface {
 	Source() *PID
 
 	Self() *PID
+
+	Reply(data interface{})
 }
 
-type mailContext struct {
-	msg  interface{}
-	src  *PID
-	self *PID
+type Message struct {
+	Data      interface{}
+	SourcePID *PID
+	TargetPID *PID
+	CallID    int64
 }
 
-func (self *mailContext) Msg() interface{} {
-	return self.msg
+func (self *Message) Msg() interface{} {
+	return self.Data
 }
 
-func (self *mailContext) Source() *PID {
-	return self.src
+func (self *Message) Source() *PID {
+	return self.SourcePID
 }
 
-func (self *mailContext) Self() *PID {
-	return self.self
+func (self *Message) Self() *PID {
+	return self.TargetPID
+}
+
+func (self *Message) Reply(data interface{}) {
+
+	self.SourcePID.Notify(&Message{
+		Data:      data,
+		TargetPID: self.SourcePID,
+		SourcePID: self.TargetPID,
+		CallID:    self.CallID,
+	})
 }
