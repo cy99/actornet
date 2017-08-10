@@ -1,0 +1,14 @@
+language: go
+
+install:
+  - go get -v github.com/davyxu/golog
+  - go get -v github.com/davyxu/goobjfmt
+
+go:
+  - 1.8
+
+script:
+  - go test -v github.com/davyxu/actornet
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)

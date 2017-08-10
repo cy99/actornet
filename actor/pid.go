@@ -71,15 +71,28 @@ func (self *PID) NotifyDataBySender(data interface{}, sender *PID) {
 	})
 }
 
+type CallHijack interface {
+	BeginHijack(waitCallID int64) chan *Message
+
+	EndHijack(reply chan *Message) *Message
+}
+
 func (self *PID) Call(data interface{}, sender *PID) interface{} {
 
-	reply := sender.ref().Call(&Message{
+	proc := sender.ref().(CallHijack)
+
+	callid := AllocRPCSeq()
+
+	reply := proc.BeginHijack(callid)
+
+	self.Notify(&Message{
 		Data:      data,
 		TargetPID: self,
 		SourcePID: sender,
+		CallID:    callid,
 	})
 
-	return reply.Data
+	return proc.EndHijack(reply).Data
 }
 
 func (self *PID) String() string {

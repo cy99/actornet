@@ -37,4 +37,7 @@ func (self *Message) Reply(data interface{}) {
 		SourcePID: self.TargetPID,
 		CallID:    self.CallID,
 	})
+
+	// 标记已经处理
+	self.CallID = 0
 }

@@ -8,8 +8,6 @@ import (
 type Process interface {
 	Notify(*Message)
 
-	Call(*Message) *Message
-
 	Stop()
 
 	PID() *PID
@@ -31,16 +29,14 @@ func (self *localProcess) notifySystem(data interface{}) {
 	})
 }
 
-func (self *localProcess) Call(m *Message) *Message {
-
-	m.CallID = AllocRPCSeq()
+func (self *localProcess) BeginHijack(waitCallID int64) chan *Message {
 
 	reply := make(chan *Message)
 
 	self.mailbox.Hijack(func(rpcBack interface{}) bool {
 
 		rpcMsg := rpcBack.(*Message)
-		if rpcMsg.CallID == m.CallID {
+		if rpcMsg.CallID == waitCallID {
 			reply <- rpcMsg
 			return true
 		}
@@ -48,7 +44,10 @@ func (self *localProcess) Call(m *Message) *Message {
 		return false
 	})
 
-	m.TargetPID.Notify(m)
+	return reply
+}
+
+func (self *localProcess) EndHijack(reply chan *Message) *Message {
 
 	msgReply := <-reply
 
@@ -79,7 +78,13 @@ func (self *localProcess) OnRecv(data interface{}) {
 
 	//log.Debugf("[%s] LocalProcess.Notify %v", self.pid.String(), *msg)
 
+	needReply := msg.CallID != 0
+
 	self.a.OnRecv(msg)
+
+	if needReply {
+		log.Errorln("message not reply", *msg)
+	}
 }
 
 func newLocalProcess(a Actor, pid *PID) *localProcess {

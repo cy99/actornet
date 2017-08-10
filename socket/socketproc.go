@@ -7,13 +7,13 @@ import (
 )
 
 type socketProcess struct {
-	pid actor.PID
+	pid *actor.PID
 
 	hijack func(*actor.Message) bool
 }
 
 func (self *socketProcess) PID() *actor.PID {
-	return &self.pid
+	return self.pid
 }
 
 func (self *socketProcess) Notify(m *actor.Message) {
@@ -42,15 +42,12 @@ func (self *socketProcess) Stop() {
 
 }
 
-func (self *socketProcess) Call(m *actor.Message) *actor.Message {
-
-	m.CallID = actor.AllocRPCSeq()
-
+func (self *socketProcess) BeginHijack(waitCallID int64) chan *actor.Message {
 	reply := make(chan *actor.Message)
 
 	self.hijack = func(rpcMsg *actor.Message) bool {
 
-		if rpcMsg.CallID == m.CallID {
+		if rpcMsg.CallID == waitCallID {
 			reply <- rpcMsg
 			return true
 		}
@@ -60,7 +57,10 @@ func (self *socketProcess) Call(m *actor.Message) *actor.Message {
 
 	addHijack(self)
 
-	m.TargetPID.Notify(m)
+	return reply
+}
+
+func (self *socketProcess) EndHijack(reply chan *actor.Message) *actor.Message {
 
 	msgReply := <-reply
 
@@ -69,12 +69,13 @@ func (self *socketProcess) Call(m *actor.Message) *actor.Message {
 	return msgReply
 }
 
+
 func init() {
 
 	actor.RemoteProcessCreator = func(pid *actor.PID) actor.Process {
 
 		return &socketProcess{
-			pid: *pid,
+			pid: pid,
 		}
 	}
 }
