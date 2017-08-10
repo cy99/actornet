@@ -16,8 +16,20 @@ func onRouter(ev *cellnet.Event) {
 		return
 	}
 
-	sourceProc := actor.LocalPIDManager.Get(msg.SourceID)
+	address, _ := AddressBySession(ev.Ses)
 
-	sourceProc.Send(actor.NewLocalPID(msg.TargetID), userMsg)
+	tgtProc := actor.LocalPIDManager.Get(msg.TargetID)
+
+	if tgtProc != nil {
+
+		if msg.SourceID != "" {
+			tgtProc.Exec(userMsg, actor.NewPID(address, msg.SourceID))
+		} else {
+			tgtProc.Exec(userMsg, nil)
+		}
+
+	} else {
+		log.Errorln("node not found:", msg.TargetID)
+	}
 
 }

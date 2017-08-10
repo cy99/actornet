@@ -1,14 +1,13 @@
 package socket
 
 import (
-	"github.com/davyxu/actornet/actor"
 	"github.com/davyxu/actornet/proto"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/socket"
 )
 
 // 启动本机的listen
-func Connect(address string) {
+func Connect(address string, id string) {
 
 	peer := socket.NewConnector(nil)
 	peer.Start(address)
@@ -16,7 +15,7 @@ func Connect(address string) {
 	cellnet.RegisterMessage(peer, "coredef.SessionConnected", func(ev *cellnet.Event) {
 
 		ev.Send(&proto.ServiceIdentify{
-			Address: actor.LocalPIDManager.Address,
+			Address: id,
 		})
 
 		addServiceSession(address, ev.Ses)

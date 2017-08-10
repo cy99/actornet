@@ -30,8 +30,15 @@ type ServiceIdentify struct {
 
 func (m *ServiceIdentify) String() string { return goobjfmt.CompactTextString(m) }
 
+type TestMsg struct {
+	Msg string
+}
+
+func (m *TestMsg) String() string { return goobjfmt.CompactTextString(m) }
+
 func init() {
 
 	cellnet.RegisterMessageMeta("binary", "proto.ServiceIdentify", reflect.TypeOf((*ServiceIdentify)(nil)).Elem(), util.StringHash("proto.ServiceIdentify"))
 	cellnet.RegisterMessageMeta("binary", "proto.Route", reflect.TypeOf((*Route)(nil)).Elem(), util.StringHash("proto.Route"))
+	cellnet.RegisterMessageMeta("binary", "proto.TestMsg", reflect.TypeOf((*TestMsg)(nil)).Elem(), util.StringHash("proto.TestMsg"))
 }

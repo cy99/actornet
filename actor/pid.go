@@ -34,21 +34,16 @@ func (self *PID) ref() Process {
 		}
 
 	} else if RemoteProcessCreator != nil {
-		self.proc = RemoteProcessCreator()
+		self.proc = RemoteProcessCreator(self)
 		return self.proc
 	}
 
 	return nil
 }
 
-func (self *PID) Send(target *PID, data interface{}) {
+func (self *PID) Exec(data interface{}, sender *PID) {
 
-	if target != nil {
-		target.ref().Send(self, data)
-	} else {
-		panic("empty target")
-	}
-
+	self.ref().Exec(data, sender)
 }
 
 func (self *PID) String() string {
@@ -74,4 +69,4 @@ func NewLocalPID(id string) *PID {
 
 var Root = NewLocalPID("Root")
 
-var RemoteProcessCreator func() Process
+var RemoteProcessCreator func(*PID) Process

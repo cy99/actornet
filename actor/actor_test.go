@@ -22,7 +22,7 @@ func TestHelloWorld(t *testing.T) {
 
 	})
 
-	Root.Send(pid, "hello")
+	pid.Exec("hello", nil)
 
 	wg.Wait()
 }
@@ -34,7 +34,11 @@ func Test2ActorCommunicate(t *testing.T) {
 		switch msg := c.Msg().(type) {
 		case string:
 			t.Log("server recv", msg)
-			c.Self().Send(c.Source(), msg)
+
+			if c.Source() != nil {
+				c.Source().Exec(msg, c.Self())
+			}
+
 		}
 
 	}
@@ -49,8 +53,9 @@ func Test2ActorCommunicate(t *testing.T) {
 
 		switch data := c.Msg().(type) {
 		case *proto.Start:
-			t.Log("client start", c.Self().String())
-			c.Self().Send(server, "hello")
+			t.Log("client start")
+
+			server.Exec("hello", c.Self())
 		case string:
 			t.Log("client recv", data)
 

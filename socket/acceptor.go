@@ -8,12 +8,12 @@ import (
 )
 
 // 启动本机的listen
-func Listen(address string) {
+func Listen(address string, id string) {
 
 	peer := socket.NewAcceptor(nil)
 	peer.Start(address)
 
-	actor.LocalPIDManager.Address = address
+	actor.LocalPIDManager.Address = id
 
 	cellnet.RegisterMessage(peer, "proto.ServiceIdentify", func(ev *cellnet.Event) {
 		msg := ev.Msg.(*proto.ServiceIdentify)

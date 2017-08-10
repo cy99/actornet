@@ -6,7 +6,7 @@ import (
 )
 
 type Process interface {
-	Send(target *PID, data interface{})
+	Exec(data interface{}, sender *PID)
 	Stop()
 
 	PID() *PID
@@ -24,18 +24,18 @@ func (self *localProcess) PID() *PID {
 	return &self.pid
 }
 
-func (self *localProcess) Send(target *PID, data interface{}) {
+func (self *localProcess) Exec(data interface{}, sender *PID) {
 
 	self.mailbox.Push(&mailContext{
 		msg:  data,
-		src:  target,
+		src:  sender,
 		self: &self.pid,
 	})
 }
 
 func (self *localProcess) Stop() {
 
-	self.Send(&self.pid, &proto.Stop{})
+	self.Exec(&proto.Stop{}, &self.pid)
 }
 
 func (self *localProcess) OnRecv(msg interface{}) {
@@ -55,7 +55,7 @@ func NewLocalProcess(a Actor, pid PID) *localProcess {
 
 	self.mailbox.Start(self)
 
-	self.Send(&self.pid, &proto.Start{})
+	self.Exec(&proto.Start{}, &self.pid)
 
 	return self
 }

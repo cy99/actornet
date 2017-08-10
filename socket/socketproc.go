@@ -14,7 +14,7 @@ func (self *socketProcess) PID() *actor.PID {
 	return &self.pid
 }
 
-func (self *socketProcess) Send(target *actor.PID, data interface{}) {
+func (self *socketProcess) Exec(data interface{}, sender *actor.PID) {
 
 	msgdata, msgid, err := cellnet.EncodeMessage(data)
 	if err != nil {
@@ -22,12 +22,17 @@ func (self *socketProcess) Send(target *actor.PID, data interface{}) {
 		return
 	}
 
-	SendToSession(target.Address, &proto.Route{
-		SourceID: self.pid.Id,
-		TargetID: target.Id,
+	msg := &proto.Route{
+		TargetID: self.pid.Id,
 		MsgID:    msgid,
 		MsgData:  msgdata,
-	})
+	}
+
+	if sender != nil {
+		msg.SourceID = sender.Id
+	}
+
+	SendToSession(self.pid.Address, msg)
 }
 
 func (self *socketProcess) Stop() {
@@ -36,8 +41,10 @@ func (self *socketProcess) Stop() {
 
 func init() {
 
-	actor.RemoteProcessCreator = func() actor.Process {
+	actor.RemoteProcessCreator = func(pid *actor.PID) actor.Process {
 
-		return new(socketProcess)
+		return &socketProcess{
+			pid: *pid,
+		}
 	}
 }

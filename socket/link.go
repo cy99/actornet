@@ -1,6 +1,8 @@
 package socket
 
 import (
+	"bytes"
+	"fmt"
 	"github.com/davyxu/cellnet"
 	"sync"
 )
@@ -29,11 +31,24 @@ func ServiceSessionByServiceID(addr string) cellnet.Session {
 	return nil
 }
 
+func AddressBySession(ses cellnet.Session) (string, bool) {
+
+	svclinkGuard.RLock()
+	defer svclinkGuard.RUnlock()
+
+	if addr, ok := addressBySes[ses]; ok {
+		return addr, true
+	}
+
+	return "", false
+}
+
 func SendToSession(addr string, msg interface{}) {
 
 	ses := ServiceSessionByServiceID(addr)
 	if ses == nil {
-		log.Errorln("service not ready:", addr)
+
+		log.Errorln("service not ready:", addr, Status())
 		return
 	}
 
@@ -70,4 +85,19 @@ func removeServiceSession(ses cellnet.Session) string {
 	}
 
 	return ""
+}
+
+func Status() string {
+
+	var buffer bytes.Buffer
+
+	buffer.WriteString("=========Link Status=========\n")
+
+	for address, ses := range sesByAddress {
+
+		buffer.WriteString(fmt.Sprintf("svcid:%s id:%d \n", address, ses.ID()))
+
+	}
+
+	return buffer.String()
 }
