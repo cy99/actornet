@@ -1,10 +1,50 @@
 package socket
 
 import (
+	"container/list"
 	"github.com/davyxu/actornet/actor"
 	"github.com/davyxu/actornet/proto"
 	"github.com/davyxu/cellnet"
+	"sync"
 )
+
+var (
+	hijackList      *list.List
+	hijackListGuard sync.Mutex
+)
+
+func addHijack(proc *socketProcess) {
+
+	hijackListGuard.Lock()
+	hijackList.PushBack(proc)
+	hijackListGuard.Unlock()
+}
+
+func checkHijack(m *actor.Message) bool {
+
+	for {
+
+		hijackListGuard.Lock()
+		elem := hijackList.Front()
+		hijackListGuard.Unlock()
+
+		if elem == nil {
+			break
+		}
+
+		proc := elem.Value.(*socketProcess)
+
+		if proc.hijack(m) {
+			hijackListGuard.Lock()
+			hijackList.Remove(elem)
+			hijackListGuard.Unlock()
+			return false
+		}
+	}
+
+	// 没有需要处理的rpc
+	return true
+}
 
 func onRouter(ev *cellnet.Event) {
 
@@ -32,10 +72,23 @@ func onRouter(ev *cellnet.Event) {
 			m.SourcePID = actor.NewPID(address, msg.SourceID)
 		}
 
-		tgtProc.Notify(m)
+		if checkHijack(m) {
+			tgtProc.Notify(m)
+		}
 
 	} else {
 		log.Errorln("node not found:", msg.TargetID)
 	}
+
+}
+
+func init() {
+
+	actor.OnReset.Add(func(...interface{}) error {
+
+		hijackList = list.New()
+
+		return nil
+	})
 
 }

@@ -1,8 +1,6 @@
 package actor
 
 import (
-	"sync/atomic"
-
 	"github.com/davyxu/actornet/mailbox"
 	"github.com/davyxu/actornet/proto"
 )
@@ -23,8 +21,6 @@ type localProcess struct {
 	pid *PID
 
 	a Actor
-
-	callseq int64
 }
 
 func (self *localProcess) notifySystem(data interface{}) {
@@ -37,8 +33,7 @@ func (self *localProcess) notifySystem(data interface{}) {
 
 func (self *localProcess) Call(m *Message) *Message {
 
-	atomic.AddInt64(&self.callseq, 1)
-	m.CallID = self.callseq
+	m.CallID = AllocRPCSeq()
 
 	reply := make(chan *Message)
 

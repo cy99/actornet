@@ -17,18 +17,6 @@ var (
 	svclinkGuard sync.RWMutex
 )
 
-func init() {
-
-	actor.OnReset.Add(func(...interface{}) error {
-
-		sesByAddress = map[string]cellnet.Session{}
-		addressBySes = map[cellnet.Session]string{}
-
-		return nil
-	})
-
-}
-
 // 对一个服务器进程来说, 连到其他服务的, 只有1个
 
 // 通过给定远方的ServiceID, 来获取其session
@@ -113,4 +101,16 @@ func Status() string {
 	}
 
 	return buffer.String()
+}
+
+func init() {
+
+	actor.OnReset.Add(func(...interface{}) error {
+
+		sesByAddress = map[string]cellnet.Session{}
+		addressBySes = map[cellnet.Session]string{}
+
+		return nil
+	})
+
 }

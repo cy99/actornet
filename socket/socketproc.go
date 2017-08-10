@@ -7,8 +7,9 @@ import (
 )
 
 type socketProcess struct {
-	pid     actor.PID
-	callseq int64
+	pid actor.PID
+
+	hijack func(*actor.Message) bool
 }
 
 func (self *socketProcess) PID() *actor.PID {
@@ -43,7 +44,29 @@ func (self *socketProcess) Stop() {
 
 func (self *socketProcess) Call(m *actor.Message) *actor.Message {
 
-	return nil
+	m.CallID = actor.AllocRPCSeq()
+
+	reply := make(chan *actor.Message)
+
+	self.hijack = func(rpcMsg *actor.Message) bool {
+
+		if rpcMsg.CallID == m.CallID {
+			reply <- rpcMsg
+			return true
+		}
+
+		return false
+	}
+
+	addHijack(self)
+
+	m.TargetPID.Notify(m)
+
+	msgReply := <-reply
+
+	self.hijack = nil
+
+	return msgReply
 }
 
 func init() {

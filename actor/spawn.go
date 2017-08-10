@@ -2,6 +2,10 @@ package actor
 
 func Spawn(name string, a ActorFunc) *PID {
 
+	if !inited {
+		panic("Call actor.StartSystem first")
+	}
+
 	pid := NewLocalPID(name)
 
 	proc := newLocalProcess(a, pid)
@@ -15,3 +19,4 @@ func Spawn(name string, a ActorFunc) *PID {
 	return proc.pid
 
 }
+
