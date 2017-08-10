@@ -22,12 +22,12 @@ func TestHelloWorld(t *testing.T) {
 
 	})
 
-	pid.Exec("hello", nil)
+	pid.Notify("hello", nil)
 
 	wg.Wait()
 }
 
-func Test2ActorCommunicate(t *testing.T) {
+func TestEcho(t *testing.T) {
 
 	echoFunc := func(c Context) {
 
@@ -36,7 +36,7 @@ func Test2ActorCommunicate(t *testing.T) {
 			t.Log("server recv", msg)
 
 			if c.Source() != nil {
-				c.Source().Exec(msg, c.Self())
+				c.Source().Notify(msg, c.Self())
 			}
 
 		}
@@ -55,7 +55,7 @@ func Test2ActorCommunicate(t *testing.T) {
 		case *proto.Start:
 			t.Log("client start")
 
-			server.Exec("hello", c.Self())
+			server.Notify("hello", c.Self())
 		case string:
 			t.Log("client recv", data)
 

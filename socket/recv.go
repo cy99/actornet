@@ -23,9 +23,9 @@ func onRouter(ev *cellnet.Event) {
 	if tgtProc != nil {
 
 		if msg.SourceID != "" {
-			tgtProc.Exec(userMsg, actor.NewPID(address, msg.SourceID))
+			tgtProc.Notify(userMsg, actor.NewPID(address, msg.SourceID))
 		} else {
-			tgtProc.Exec(userMsg, nil)
+			tgtProc.Notify(userMsg, nil)
 		}
 
 	} else {

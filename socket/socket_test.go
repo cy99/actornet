@@ -27,7 +27,7 @@ func TestServer(t *testing.T) {
 
 				if c.Source() != nil {
 					t.Log("send back")
-					c.Source().Exec(msg, c.Self())
+					c.Source().Notify(msg, c.Self())
 				}
 
 			}
@@ -62,7 +62,7 @@ func TestClient(t *testing.T) {
 	})
 
 	target := actor.NewPID("127.0.0.1:8081", "server")
-	target.Exec(proto.TestMsg{Msg: "hello"}, client)
+	target.Notify(proto.TestMsg{Msg: "hello"}, client)
 
 	wg.Wait()
 }

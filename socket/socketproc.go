@@ -14,7 +14,7 @@ func (self *socketProcess) PID() *actor.PID {
 	return &self.pid
 }
 
-func (self *socketProcess) Exec(data interface{}, sender *actor.PID) {
+func (self *socketProcess) Notify(data interface{}, sender *actor.PID) {
 
 	msgdata, msgid, err := cellnet.EncodeMessage(data)
 	if err != nil {
