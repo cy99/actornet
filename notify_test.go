@@ -1,18 +1,19 @@
-package socket
+package actornet
 
 import (
 	"github.com/davyxu/actornet/actor"
 	"github.com/davyxu/actornet/proto"
+	"github.com/davyxu/actornet/socket"
 	"sync"
 	"testing"
 	"time"
 )
 
-func TestServer(t *testing.T) {
+func TestCrossProcessNotifyServer(t *testing.T) {
 
 	actor.StartSystem()
 
-	Listen("127.0.0.1:8081", "server")
+	socket.Listen("127.0.0.1:8081", "server")
 
 	var wg sync.WaitGroup
 
@@ -40,11 +41,11 @@ func TestServer(t *testing.T) {
 	wg.Wait()
 }
 
-func TestClient(t *testing.T) {
+func TestCrossProcessNotifyClient(t *testing.T) {
 
 	actor.StartSystem()
 
-	Connect("127.0.0.1:8081", "client")
+	socket.Connect("127.0.0.1:8081", "client")
 
 	time.Sleep(time.Second)
 

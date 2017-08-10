@@ -1,18 +1,19 @@
-package socket
+package actornet
 
 import (
 	"github.com/davyxu/actornet/actor"
 	"github.com/davyxu/actornet/proto"
+	"github.com/davyxu/actornet/socket"
 	"sync"
 	"testing"
 	"time"
 )
 
-func TestRPCServer(t *testing.T) {
+func TestCrossProcessCallServer(t *testing.T) {
 
 	actor.StartSystem()
 
-	Listen("127.0.0.1:8081", "server")
+	socket.Listen("127.0.0.1:8081", "server")
 
 	var wg sync.WaitGroup
 
@@ -36,11 +37,11 @@ func TestRPCServer(t *testing.T) {
 	wg.Wait()
 }
 
-func TestRPCClient(t *testing.T) {
+func TestCrossProcessCallClient(t *testing.T) {
 
 	actor.StartSystem()
 
-	Connect("127.0.0.1:8081", "client")
+	socket.Connect("127.0.0.1:8081", "client")
 
 	// 等待客户端连接上服务器
 	time.Sleep(time.Second)

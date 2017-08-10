@@ -1,6 +1,7 @@
-package actor
+package actornet
 
 import (
+	"github.com/davyxu/actornet/actor"
 	"github.com/davyxu/actornet/proto"
 	"sync"
 	"testing"
@@ -8,13 +9,13 @@ import (
 
 func TestHelloWorld(t *testing.T) {
 
-	StartSystem()
+	actor.StartSystem()
 
 	var wg sync.WaitGroup
 
 	wg.Add(1)
 
-	pid := Spawn("hello", func(c Context) {
+	pid := actor.Spawn("hello", func(c actor.Context) {
 
 		switch msg := c.Msg().(type) {
 		case string:
@@ -31,9 +32,9 @@ func TestHelloWorld(t *testing.T) {
 
 func TestEcho(t *testing.T) {
 
-	StartSystem()
+	actor.StartSystem()
 
-	echoFunc := func(c Context) {
+	echoFunc := func(c actor.Context) {
 
 		switch msg := c.Msg().(type) {
 		case string:
@@ -47,13 +48,13 @@ func TestEcho(t *testing.T) {
 
 	}
 
-	server := Spawn("server", echoFunc)
+	server := actor.Spawn("server", echoFunc)
 
 	var wg sync.WaitGroup
 
 	wg.Add(1)
 
-	Spawn("client", func(c Context) {
+	actor.Spawn("client", func(c actor.Context) {
 
 		switch data := c.Msg().(type) {
 		case *proto.Start:
@@ -73,9 +74,9 @@ func TestEcho(t *testing.T) {
 
 func TestRPC(t *testing.T) {
 
-	StartSystem()
+	actor.StartSystem()
 
-	rpcFunc := func(c Context) {
+	rpcFunc := func(c actor.Context) {
 
 		switch msg := c.Msg().(type) {
 		case string:
@@ -86,13 +87,13 @@ func TestRPC(t *testing.T) {
 
 	}
 
-	server := Spawn("server", rpcFunc)
+	server := actor.Spawn("server", rpcFunc)
 
 	var wg sync.WaitGroup
 
 	wg.Add(1)
 
-	Spawn("client", func(c Context) {
+	actor.Spawn("client", func(c actor.Context) {
 
 		switch c.Msg().(type) {
 		case *proto.Start:
