@@ -1,8 +1,8 @@
 # ActorNet
 [![MIT licensed][11]][12] [![GoDoc][1]][2]
 
-[1]: https://godoc.org/github.com/davyxu/cellnet?status.svg
-[2]: https://godoc.org/github.com/davyxu/cellnet
+[1]: https://godoc.org/github.com/davyxu/actornet?status.svg
+[2]: https://godoc.org/github.com/davyxu/actornet
 [11]: https://img.shields.io/badge/license-MIT-blue.svg
 [12]: LICENSE
 
