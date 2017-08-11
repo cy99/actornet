@@ -6,7 +6,7 @@ import (
 )
 
 type Process interface {
-	Notify(*Message)
+	Notify(interface{})
 
 	Stop()
 
@@ -60,11 +60,11 @@ func (self *localProcess) PID() *PID {
 	return self.pid
 }
 
-func (self *localProcess) Notify(m *Message) {
+func (self *localProcess) Notify(data interface{}) {
 
 	//log.Debugf("[%s] LocalProcess.Notify %v", self.pid.String(), *m)
 
-	self.mailbox.Push(m)
+	self.mailbox.Push(data)
 }
 
 func (self *localProcess) Stop() {
@@ -74,17 +74,9 @@ func (self *localProcess) Stop() {
 
 func (self *localProcess) OnRecv(data interface{}) {
 
-	msg := data.(*Message)
+	ctx := data.(Context)
 
-	//log.Debugf("[%s] LocalProcess.Notify %v", self.pid.String(), *msg)
-
-	needReply := msg.CallID != 0
-
-	self.a.OnRecv(msg)
-
-	if needReply {
-		log.Errorln("message not reply", *msg)
-	}
+	self.a.OnRecv(ctx)
 }
 
 func newLocalProcess(a Actor, pid *PID) *localProcess {

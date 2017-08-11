@@ -1,2 +1,4 @@
 socket/debug.test
 actor/debug.test
+debug.test
+.vscode/

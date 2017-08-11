@@ -49,9 +49,9 @@ func (self *PID) ref() Process {
 	return nil
 }
 
-func (self *PID) Notify(m *Message) {
+func (self *PID) Notify(data interface{}) {
 
-	self.ref().Notify(m)
+	self.ref().Notify(data)
 }
 
 func (self *PID) NotifyData(data interface{}) {

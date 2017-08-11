@@ -16,7 +16,9 @@ func (self *socketProcess) PID() *actor.PID {
 	return self.pid
 }
 
-func (self *socketProcess) Notify(m *actor.Message) {
+func (self *socketProcess) Notify(data interface{}) {
+
+	m := data.(*actor.Message)
 
 	msgdata, msgid, err := cellnet.EncodeMessage(m.Data)
 	if err != nil {
@@ -68,7 +70,6 @@ func (self *socketProcess) EndHijack(reply chan *actor.Message) *actor.Message {
 
 	return msgReply
 }
-
 
 func init() {
 

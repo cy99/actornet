@@ -19,7 +19,7 @@ func TestCrossProcessCallServer(t *testing.T) {
 
 	wg.Add(1)
 
-	actor.Spawn("server", func(c actor.Context) {
+	actor.SpawnByFunc("server", func(c actor.Context) {
 
 		switch msg := c.Msg().(type) {
 		case *proto.TestMsg:
@@ -50,7 +50,7 @@ func TestCrossProcessCallClient(t *testing.T) {
 
 	wg.Add(1)
 
-	client := actor.Spawn("client", func(c actor.Context) {
+	client := actor.SpawnByFunc("client", func(c actor.Context) {
 
 		switch msg := c.Msg().(type) {
 		case *proto.TestMsg:

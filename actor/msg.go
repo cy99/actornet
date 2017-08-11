@@ -1,14 +1,5 @@
 package actor
 
-type Context interface {
-	Msg() interface{}
-
-	Source() *PID
-
-	Self() *PID
-
-	Reply(data interface{})
-}
 
 type Message struct {
 	Data      interface{}

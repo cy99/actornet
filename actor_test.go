@@ -1,10 +1,12 @@
 package actornet
 
 import (
-	"github.com/davyxu/actornet/actor"
-	"github.com/davyxu/actornet/proto"
 	"sync"
 	"testing"
+
+	"github.com/davyxu/actornet/actor"
+	"github.com/davyxu/actornet/proto"
+	"github.com/davyxu/actornet/serialize"
 )
 
 func TestHelloWorld(t *testing.T) {
@@ -15,7 +17,7 @@ func TestHelloWorld(t *testing.T) {
 
 	wg.Add(1)
 
-	pid := actor.Spawn("hello", func(c actor.Context) {
+	pid := actor.SpawnByFunc("hello", func(c actor.Context) {
 
 		switch msg := c.Msg().(type) {
 		case string:
@@ -48,13 +50,13 @@ func TestEcho(t *testing.T) {
 
 	}
 
-	server := actor.Spawn("server", echoFunc)
+	server := actor.SpawnByFunc("server", echoFunc)
 
 	var wg sync.WaitGroup
 
 	wg.Add(1)
 
-	actor.Spawn("client", func(c actor.Context) {
+	actor.SpawnByFunc("client", func(c actor.Context) {
 
 		switch data := c.Msg().(type) {
 		case *proto.Start:
@@ -87,13 +89,13 @@ func TestRPC(t *testing.T) {
 
 	}
 
-	server := actor.Spawn("server", rpcFunc)
+	server := actor.SpawnByFunc("server", rpcFunc)
 
 	var wg sync.WaitGroup
 
 	wg.Add(1)
 
-	actor.Spawn("client", func(c actor.Context) {
+	actor.SpawnByFunc("client", func(c actor.Context) {
 
 		switch c.Msg().(type) {
 		case *proto.Start:
@@ -111,4 +113,41 @@ func TestRPC(t *testing.T) {
 	})
 
 	wg.Wait()
+}
+
+var serWG sync.WaitGroup
+
+type myActor struct {
+	hp       int
+	nameList []string
+}
+
+func (self *myActor) OnRecv(c actor.Context) {
+
+	switch c.Msg().(type) {
+	case *proto.Start:
+		self.hp = 123
+		self.nameList = []string{"genji", "mei"}
+	case *proto.Serialize:
+		log.Debugln("serialize")
+		serWG.Done()
+		ser := c.(serialize.Serializer)
+		ser.Serialize(&self.hp)
+		ser.Serialize(&self.nameList)
+	}
+
+}
+
+func TestSerialize(t *testing.T) {
+
+	actor.StartSystem()
+
+	pid := actor.SpawnByInstance("hibernate", new(myActor))
+
+	serialize.Save(pid)
+
+	serWG.Add(1)
+
+	serWG.Wait()
+
 }
