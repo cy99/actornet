@@ -3,6 +3,7 @@ package actor
 import (
 	"github.com/davyxu/actornet/mailbox"
 	"github.com/davyxu/actornet/proto"
+	"github.com/davyxu/actornet/util"
 )
 
 type Process interface {
@@ -29,31 +30,24 @@ func (self *localProcess) notifySystem(data interface{}) {
 	})
 }
 
-func (self *localProcess) BeginHijack(waitCallID int64) chan *Message {
+func (self *localProcess) CreateRPC(waitCallID int64) *util.Future {
 
-	reply := make(chan *Message)
+	f := util.NewFuture()
 
 	self.mailbox.Hijack(func(rpcBack interface{}) bool {
 
 		rpcMsg := rpcBack.(*Message)
 		if rpcMsg.CallID == waitCallID {
-			reply <- rpcMsg
+
+			self.mailbox.Hijack(nil)
+			f.Done(rpcMsg)
 			return true
 		}
 
 		return false
 	})
 
-	return reply
-}
-
-func (self *localProcess) EndHijack(reply chan *Message) *Message {
-
-	msgReply := <-reply
-
-	self.mailbox.Hijack(nil)
-
-	return msgReply
+	return f
 }
 
 func (self *localProcess) PID() *PID {

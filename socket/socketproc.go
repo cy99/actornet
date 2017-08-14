@@ -3,6 +3,7 @@ package socket
 import (
 	"github.com/davyxu/actornet/actor"
 	"github.com/davyxu/actornet/proto"
+	"github.com/davyxu/actornet/util"
 	"github.com/davyxu/cellnet"
 )
 
@@ -44,13 +45,14 @@ func (self *socketProcess) Stop() {
 
 }
 
-func (self *socketProcess) BeginHijack(waitCallID int64) chan *actor.Message {
-	reply := make(chan *actor.Message)
+func (self *socketProcess) CreateRPC(waitCallID int64) *util.Future {
+	f := util.NewFuture()
 
 	self.hijack = func(rpcMsg *actor.Message) bool {
 
 		if rpcMsg.CallID == waitCallID {
-			reply <- rpcMsg
+			self.hijack = nil
+			f.Done(rpcMsg)
 			return true
 		}
 
@@ -59,16 +61,7 @@ func (self *socketProcess) BeginHijack(waitCallID int64) chan *actor.Message {
 
 	addHijack(self)
 
-	return reply
-}
-
-func (self *socketProcess) EndHijack(reply chan *actor.Message) *actor.Message {
-
-	msgReply := <-reply
-
-	self.hijack = nil
-
-	return msgReply
+	return f
 }
 
 func init() {

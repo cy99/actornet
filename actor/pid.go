@@ -1,5 +1,7 @@
 package actor
 
+import "github.com/davyxu/actornet/util"
+
 type PID struct {
 	Address string
 	Id      string
@@ -71,19 +73,20 @@ func (self *PID) NotifyDataBySender(data interface{}, sender *PID) {
 	})
 }
 
-type CallHijack interface {
-	BeginHijack(waitCallID int64) chan *Message
-
-	EndHijack(reply chan *Message) *Message
-}
-
 func (self *PID) Call(data interface{}, sender *PID) interface{} {
 
-	proc := sender.ref().(CallHijack)
+	return self.CallFuture(data, sender).Get().(*Message).Data
+}
+
+func (self *PID) CallFuture(data interface{}, sender *PID) *util.Future {
+
+	proc := sender.ref().(interface {
+		CreateRPC(waitCallID int64) *util.Future
+	})
 
 	callid := AllocRPCSeq()
 
-	reply := proc.BeginHijack(callid)
+	f := proc.CreateRPC(callid)
 
 	self.Notify(&Message{
 		Data:      data,
@@ -92,7 +95,7 @@ func (self *PID) Call(data interface{}, sender *PID) interface{} {
 		CallID:    callid,
 	})
 
-	return proc.EndHijack(reply).Data
+	return f
 }
 
 func (self *PID) String() string {
