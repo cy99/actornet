@@ -5,3 +5,5 @@ import (
 )
 
 var log *golog.Logger = golog.New("actornet_actor")
+
+var EnableDebug bool

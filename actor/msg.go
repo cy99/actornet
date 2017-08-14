@@ -1,5 +1,9 @@
 package actor
 
+import (
+	"fmt"
+	"github.com/davyxu/goobjfmt"
+)
 
 type Message struct {
 	Data      interface{}
@@ -18,6 +22,17 @@ func (self *Message) Source() *PID {
 
 func (self *Message) Self() *PID {
 	return self.TargetPID
+}
+
+func (self *Message) String() string {
+
+	var source string
+
+	if self.SourcePID != nil {
+		source = self.SourcePID.String()
+	}
+
+	return fmt.Sprintf("(%s)->(%s) callid:%d | (%T) %s", source, self.TargetPID.String(), self.CallID, self.Data, goobjfmt.CompactTextString(self.Data))
 }
 
 func (self *Message) Reply(data interface{}) {

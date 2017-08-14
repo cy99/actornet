@@ -56,7 +56,9 @@ func (self *localProcess) PID() *PID {
 
 func (self *localProcess) Notify(data interface{}) {
 
-	//log.Debugf("[%s] LocalProcess.Notify %v", self.pid.String(), *m)
+	if EnableDebug {
+		log.Debugf("#notify %s", data.(Context).String())
+	}
 
 	self.mailbox.Push(data)
 }
@@ -70,7 +72,17 @@ func (self *localProcess) OnRecv(data interface{}) {
 
 	ctx := data.(Context)
 
-	self.a.OnRecv(ctx)
+	if EnableDebug {
+		log.Debugf("#recv %s", data.(Context).String())
+	}
+
+	if sermsg, ok := ctx.Msg().(*proto.Serialize); ok {
+		self.a.(Serializable).OnSerialize(sermsg.Ser.(Serializer))
+		ctx.Reply(nil)
+	} else {
+		self.a.OnRecv(ctx)
+	}
+
 }
 
 func newLocalProcess(a Actor, pid *PID) *localProcess {

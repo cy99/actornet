@@ -15,6 +15,8 @@ test.exe -test.v -test.run TestEcho
 test.exe -test.v -test.run TestRPC
 @IF %ERRORLEVEL% NEQ 0 pause
 
+test.exe -test.v -test.run TestSerialize
+@IF %ERRORLEVEL% NEQ 0 pause
 
 start test.exe -test.v -test.run TestCrossProcessNotifyServer
 test.exe -test.v -test.run TestCrossProcessNotifyClient

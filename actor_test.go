@@ -6,7 +6,6 @@ import (
 
 	"github.com/davyxu/actornet/actor"
 	"github.com/davyxu/actornet/proto"
-	"github.com/davyxu/actornet/serialize"
 )
 
 func TestHelloWorld(t *testing.T) {
@@ -115,8 +114,6 @@ func TestRPC(t *testing.T) {
 	wg.Wait()
 }
 
-var serWG sync.WaitGroup
-
 type myActor struct {
 	hp       int
 	nameList []string
@@ -128,26 +125,22 @@ func (self *myActor) OnRecv(c actor.Context) {
 	case *proto.Start:
 		self.hp = 123
 		self.nameList = []string{"genji", "mei"}
-	case *proto.Serialize:
-		log.Debugln("serialize")
-		serWG.Done()
-		ser := c.(serialize.Serializer)
-		ser.Serialize(&self.hp)
-		ser.Serialize(&self.nameList)
 	}
+}
 
+func (self *myActor) OnSerialize(ser actor.Serializer) {
+	ser.Serialize(&self.hp)
+	ser.Serialize(&self.nameList)
 }
 
 func TestSerialize(t *testing.T) {
+
+	actor.EnableDebug = true
 
 	actor.StartSystem()
 
 	pid := actor.SpawnByInstance("hibernate", new(myActor))
 
-	serialize.Save(pid)
-
-	serWG.Add(1)
-
-	serWG.Wait()
+	t.Log(actor.Save(pid))
 
 }

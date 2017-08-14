@@ -1,4 +1,4 @@
-package serialize
+package actor
 
 import (
 	"bytes"
@@ -24,6 +24,10 @@ func (self *binarySerializer) Serialize(data interface{}) {
 		self.dec.Decode(data)
 	}
 
+}
+
+func (self *binarySerializer) Bytes() []byte {
+	return self.buf.Bytes()
 }
 
 func NewBinaryWriter() Serializer {

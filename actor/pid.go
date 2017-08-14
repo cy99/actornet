@@ -78,11 +78,13 @@ func (self *PID) Call(data interface{}, sender *PID) interface{} {
 	return self.CallFuture(data, sender).Get().(*Message).Data
 }
 
+type rpcCreator interface {
+	CreateRPC(waitCallID int64) *util.Future
+}
+
 func (self *PID) CallFuture(data interface{}, sender *PID) *util.Future {
 
-	proc := sender.ref().(interface {
-		CreateRPC(waitCallID int64) *util.Future
-	})
+	proc := sender.ref().(rpcCreator)
 
 	callid := AllocRPCSeq()
 
