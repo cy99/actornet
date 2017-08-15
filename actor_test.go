@@ -135,8 +135,6 @@ func (self *myActor) OnSerialize(ser actor.Serializer) {
 
 func TestSerialize(t *testing.T) {
 
-	actor.EnableDebug = true
-
 	actor.StartSystem()
 
 	pid := actor.SpawnByInstance("hibernate", new(myActor))

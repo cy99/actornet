@@ -22,6 +22,10 @@ type localProcess struct {
 	a Actor
 }
 
+func (self *localProcess) Serialize(ser Serializer) {
+	self.a.(Serializable).OnSerialize(ser)
+}
+
 func (self *localProcess) notifySystem(data interface{}) {
 	self.Notify(&Message{
 		Data:      data,

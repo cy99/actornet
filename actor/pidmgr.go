@@ -2,9 +2,10 @@ package actor
 
 import (
 	"errors"
-	"github.com/davyxu/actornet/util"
 	"strconv"
 	"sync"
+
+	"github.com/davyxu/actornet/util"
 )
 
 type PIDManager struct {
@@ -29,9 +30,18 @@ func (self *PIDManager) Add(p Process) error {
 	return nil
 }
 
-func (self *PIDManager) Get(id string) Process {
+func (self *PIDManager) GetByAddress(id string) Process {
 
 	if proc, ok := self.processByID[id]; ok {
+		return proc
+	}
+
+	return nil
+}
+
+func (self *PIDManager) Get(pid *PID) Process {
+
+	if proc, ok := self.processByID[pid.Id]; ok {
 		return proc
 	}
 

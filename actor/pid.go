@@ -21,7 +21,7 @@ func (self *PID) ref() Process {
 
 	if self.IsLocal() {
 
-		p := LocalPIDManager.Get(self.Id)
+		p := LocalPIDManager.GetByAddress(self.Id)
 		if p != nil {
 			self.proc = p
 			return p
@@ -31,7 +31,7 @@ func (self *PID) ref() Process {
 
 		mgr := remotePIDManager(self.Address)
 
-		proc := mgr.Get(self.Id)
+		proc := mgr.GetByAddress(self.Id)
 
 		if proc == nil {
 			proc = RemoteProcessCreator(self)
