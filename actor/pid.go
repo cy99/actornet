@@ -51,11 +51,6 @@ func (self *PID) ref() Process {
 	return nil
 }
 
-func (self *PID) Notify(data interface{}) {
-
-	self.ref().Notify(data)
-}
-
 func (self *PID) NotifyData(data interface{}) {
 
 	self.ref().Notify(&Message{
@@ -90,7 +85,7 @@ func (self *PID) CallFuture(data interface{}, sender *PID) *util.Future {
 
 	f := proc.CreateRPC(callid)
 
-	self.Notify(&Message{
+	self.ref().Notify(&Message{
 		Data:      data,
 		TargetPID: self,
 		SourcePID: sender,

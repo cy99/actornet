@@ -1,4 +1,4 @@
-package socket
+package nexus
 
 import (
 	"container/list"
@@ -13,7 +13,7 @@ var (
 	hijackListGuard sync.Mutex
 )
 
-func addHijack(proc *socketProcess) {
+func addHijack(proc *nexusProcess) {
 
 	hijackListGuard.Lock()
 	hijackList.PushBack(proc)
@@ -32,7 +32,7 @@ func checkHijack(m *actor.Message) bool {
 			break
 		}
 
-		proc := elem.Value.(*socketProcess)
+		proc := elem.Value.(*nexusProcess)
 
 		if proc.hijack(m) {
 			hijackListGuard.Lock()
@@ -56,7 +56,7 @@ func onRouter(ev *cellnet.Event) {
 		return
 	}
 
-	address, _ := AddressBySession(ev.Ses)
+	address := AddressBySession(ev.Ses)
 
 	tgtProc := actor.LocalPIDManager.GetByAddress(msg.TargetID)
 

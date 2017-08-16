@@ -1,4 +1,4 @@
-package socket
+package nexus
 
 import (
 	"github.com/davyxu/actornet/actor"

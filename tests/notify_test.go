@@ -1,9 +1,9 @@
-package actornet
+package tests
 
 import (
 	"github.com/davyxu/actornet/actor"
+	"github.com/davyxu/actornet/nexus"
 	"github.com/davyxu/actornet/proto"
-	"github.com/davyxu/actornet/socket"
 	"sync"
 	"testing"
 	"time"
@@ -13,13 +13,13 @@ func TestCrossProcessNotifyServer(t *testing.T) {
 
 	actor.StartSystem()
 
-	socket.Listen("127.0.0.1:8081", "server")
+	nexus.Listen("127.0.0.1:8081", "server")
 
 	var wg sync.WaitGroup
 
 	wg.Add(1)
 
-	actor.SpawnByFunc("server", func(c actor.Context) {
+	actor.NewTemplate().WithName("server").WithFunc(func(c actor.Context) {
 
 		switch msg := c.Msg().(type) {
 		case *proto.TestMsg:
@@ -36,7 +36,7 @@ func TestCrossProcessNotifyServer(t *testing.T) {
 			}
 		}
 
-	})
+	}).Spawn()
 
 	wg.Wait()
 }
@@ -45,7 +45,7 @@ func TestCrossProcessNotifyClient(t *testing.T) {
 
 	actor.StartSystem()
 
-	socket.Connect("127.0.0.1:8081", "client")
+	nexus.Connect("127.0.0.1:8081", "client")
 
 	time.Sleep(time.Second)
 
@@ -53,7 +53,7 @@ func TestCrossProcessNotifyClient(t *testing.T) {
 
 	wg.Add(1)
 
-	client := actor.SpawnByFunc("client", func(c actor.Context) {
+	client := actor.NewTemplate().WithName("client").WithFunc(func(c actor.Context) {
 
 		switch msg := c.Msg().(type) {
 		case *proto.TestMsg:
@@ -64,7 +64,7 @@ func TestCrossProcessNotifyClient(t *testing.T) {
 
 		}
 
-	})
+	}).Spawn()
 
 	target := actor.NewPID("127.0.0.1:8081", "server")
 	target.NotifyDataBySender(proto.TestMsg{Msg: "hello"}, client)

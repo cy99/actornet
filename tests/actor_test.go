@@ -1,4 +1,4 @@
-package actornet
+package tests
 
 import (
 	"sync"
@@ -16,7 +16,7 @@ func TestHelloWorld(t *testing.T) {
 
 	wg.Add(1)
 
-	pid := actor.SpawnByFunc("hello", func(c actor.Context) {
+	pid := actor.NewTemplate().WithName("hello").WithFunc(func(c actor.Context) {
 
 		switch msg := c.Msg().(type) {
 		case string:
@@ -24,7 +24,7 @@ func TestHelloWorld(t *testing.T) {
 			wg.Done()
 		}
 
-	})
+	}).Spawn()
 
 	pid.NotifyData("hello")
 
@@ -49,13 +49,13 @@ func TestEcho(t *testing.T) {
 
 	}
 
-	server := actor.SpawnByFunc("server", echoFunc)
+	server := actor.NewTemplate().WithName("server").WithFunc(echoFunc).Spawn()
 
 	var wg sync.WaitGroup
 
 	wg.Add(1)
 
-	actor.SpawnByFunc("client", func(c actor.Context) {
+	actor.NewTemplate().WithName("client").WithFunc(func(c actor.Context) {
 
 		switch data := c.Msg().(type) {
 		case *proto.Start:
@@ -68,7 +68,7 @@ func TestEcho(t *testing.T) {
 			wg.Done()
 		}
 
-	})
+	}).Spawn()
 
 	wg.Wait()
 }
@@ -88,13 +88,13 @@ func TestRPC(t *testing.T) {
 
 	}
 
-	server := actor.SpawnByFunc("server", rpcFunc)
+	server := actor.NewTemplate().WithName("server").WithFunc(rpcFunc).Spawn()
 
 	var wg sync.WaitGroup
 
 	wg.Add(1)
 
-	actor.SpawnByFunc("client", func(c actor.Context) {
+	actor.NewTemplate().WithName("client").WithFunc(func(c actor.Context) {
 
 		switch c.Msg().(type) {
 		case *proto.Start:
@@ -109,7 +109,7 @@ func TestRPC(t *testing.T) {
 
 		}
 
-	})
+	}).Spawn()
 
 	wg.Wait()
 }
@@ -137,7 +137,7 @@ func TestSerialize(t *testing.T) {
 
 	actor.StartSystem()
 
-	pid := actor.SpawnByInstance("hibernate", new(myActor))
+	pid := actor.NewTemplate().WithName("hibernate").WithInstance(new(myActor)).Spawn()
 
 	t.Log(actor.Save(pid))
 

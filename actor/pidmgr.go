@@ -41,11 +41,24 @@ func (self *PIDManager) GetByAddress(id string) Process {
 
 func (self *PIDManager) Get(pid *PID) Process {
 
+	if pid.Address != self.Address {
+		return nil
+	}
+
 	if proc, ok := self.processByID[pid.Id]; ok {
 		return proc
 	}
 
 	return nil
+}
+
+func (self *PIDManager) Remove(pid *PID) {
+
+	if pid.Address != self.Address {
+		return
+	}
+
+	delete(self.processByID, pid.Id)
 }
 
 func NewPIDManager(address string) *PIDManager {

@@ -37,7 +37,7 @@ func (self *Message) String() string {
 
 func (self *Message) Reply(data interface{}) {
 
-	self.SourcePID.Notify(&Message{
+	self.SourcePID.ref().Notify(&Message{
 		Data:      data,
 		TargetPID: self.SourcePID,
 		SourcePID: self.TargetPID,

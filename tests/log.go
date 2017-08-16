@@ -1,4 +1,4 @@
-package actornet
+package tests
 
 import (
 	"github.com/davyxu/golog"
