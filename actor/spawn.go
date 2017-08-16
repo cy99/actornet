@@ -6,13 +6,13 @@ import (
 )
 
 type ActorTemplate struct {
-	name string
-	a    Actor
-	pid  *PID
+	id  string
+	a   Actor
+	pid *PID
 }
 
-func (self *ActorTemplate) WithName(name string) *ActorTemplate {
-	self.name = name
+func (self *ActorTemplate) WithID(id string) *ActorTemplate {
+	self.id = id
 	return self
 }
 
@@ -29,8 +29,8 @@ func (self *ActorTemplate) WithInstance(a Actor) *ActorTemplate {
 func (self *ActorTemplate) Spawn() *PID {
 
 	// 生成流水名字
-	if self.name == "" {
-		self.name = strconv.FormatInt(util.GenPersistantID(0), 10)
+	if self.id == "" {
+		self.id = strconv.FormatInt(util.GenPersistantID(0), 10)
 	}
 
 	return spawn(self)
@@ -46,7 +46,7 @@ func spawn(t *ActorTemplate) *PID {
 		panic("Call actor.StartSystem first")
 	}
 
-	pid := NewLocalPID(t.name)
+	pid := NewLocalPID(t.id)
 
 	proc := newLocalProcess(t.a, pid)
 

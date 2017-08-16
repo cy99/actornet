@@ -27,7 +27,7 @@ ping -n 2 127.1>nul
 start test.exe -test.v -test.run TestCrossProcessCallServer
 test.exe -test.v -test.run TestCrossProcessCallClient
 @IF %ERRORLEVEL% NEQ 0 pause
-ping -n 1 127.1>nul
+ping -n 2 127.1>nul
 
 
 del /q test.exe

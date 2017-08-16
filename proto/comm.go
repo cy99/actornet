@@ -20,7 +20,7 @@ type Route struct {
 func (m *Route) String() string { return goobjfmt.CompactTextString(m) }
 
 type ServiceIdentify struct {
-	Address string
+	Domain string
 }
 
 func (m *ServiceIdentify) String() string { return goobjfmt.CompactTextString(m) }

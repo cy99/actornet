@@ -30,38 +30,6 @@ func PIDBySession(ses cellnet.Session) *actor.PID {
 	return nil
 }
 
-func SendToClient(pid *actor.PID, msg interface{}) {
-
-	ses := ServiceSessionByPID(pid)
-	if ses == nil {
-
-		log.Errorln("client not exists:", pid.String(), Status())
-		return
-	}
-
-	ses.Send(msg)
-}
-
-func BroardcastToClients(msg interface{}) {
-
-	sesLinkPID.Visit(func(main, slave interface{}) bool {
-
-		main.(cellnet.Session).Send(msg)
-
-		return true
-	})
-}
-
-func BroardcastToActor(msg interface{}) {
-
-	sesLinkPID.Visit(func(main, slave interface{}) bool {
-
-		slave.(*actor.PID).NotifyData(msg)
-
-		return true
-	})
-}
-
 func addClient(pid *actor.PID, ses cellnet.Session) {
 
 	sesLinkPID.Add(ses, pid)
@@ -85,7 +53,7 @@ func Status() string {
 
 	var buffer bytes.Buffer
 
-	buffer.WriteString("=========Link Status=========\n")
+	buffer.WriteString("=========Client Status=========\n")
 
 	sesLinkPID.Visit(func(main, slave interface{}) bool {
 

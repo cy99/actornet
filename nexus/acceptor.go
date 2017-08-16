@@ -8,17 +8,21 @@ import (
 )
 
 // 启动本机的listen
-func Listen(address string, id string) {
+func Listen(address string, domain string) {
 
 	peer := socket.NewAcceptor(nil)
 	peer.Start(address)
 
-	actor.LocalPIDManager.Address = id
+	actor.LocalPIDManager.Domain = domain
 
 	cellnet.RegisterMessage(peer, "proto.ServiceIdentify", func(ev *cellnet.Event) {
 		msg := ev.Msg.(*proto.ServiceIdentify)
 
-		addServiceSession(msg.Address, ev.Ses)
+		ev.Send(&proto.ServiceIdentify{
+			Domain: domain,
+		})
+
+		addServiceSession(msg.Domain, ev.Ses)
 	})
 
 	cellnet.RegisterMessage(peer, "coredef.SessionClosed", func(ev *cellnet.Event) {

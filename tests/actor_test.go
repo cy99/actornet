@@ -16,7 +16,7 @@ func TestHelloWorld(t *testing.T) {
 
 	wg.Add(1)
 
-	pid := actor.NewTemplate().WithName("hello").WithFunc(func(c actor.Context) {
+	pid := actor.NewTemplate().WithID("hello").WithFunc(func(c actor.Context) {
 
 		switch msg := c.Msg().(type) {
 		case string:
@@ -49,13 +49,13 @@ func TestEcho(t *testing.T) {
 
 	}
 
-	server := actor.NewTemplate().WithName("server").WithFunc(echoFunc).Spawn()
+	server := actor.NewTemplate().WithID("server").WithFunc(echoFunc).Spawn()
 
 	var wg sync.WaitGroup
 
 	wg.Add(1)
 
-	actor.NewTemplate().WithName("client").WithFunc(func(c actor.Context) {
+	actor.NewTemplate().WithID("client").WithFunc(func(c actor.Context) {
 
 		switch data := c.Msg().(type) {
 		case *proto.Start:
@@ -88,13 +88,13 @@ func TestRPC(t *testing.T) {
 
 	}
 
-	server := actor.NewTemplate().WithName("server").WithFunc(rpcFunc).Spawn()
+	server := actor.NewTemplate().WithID("server").WithFunc(rpcFunc).Spawn()
 
 	var wg sync.WaitGroup
 
 	wg.Add(1)
 
-	actor.NewTemplate().WithName("client").WithFunc(func(c actor.Context) {
+	actor.NewTemplate().WithID("client").WithFunc(func(c actor.Context) {
 
 		switch c.Msg().(type) {
 		case *proto.Start:
@@ -137,7 +137,7 @@ func TestSerialize(t *testing.T) {
 
 	actor.StartSystem()
 
-	pid := actor.NewTemplate().WithName("hibernate").WithInstance(new(myActor)).Spawn()
+	pid := actor.NewTemplate().WithID("hibernate").WithInstance(new(myActor)).Spawn()
 
 	t.Log(actor.Save(pid))
 

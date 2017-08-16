@@ -9,7 +9,7 @@ import (
 )
 
 type PIDManager struct {
-	Address string
+	Domain string
 
 	processByID map[string]Process
 }
@@ -30,7 +30,7 @@ func (self *PIDManager) Add(p Process) error {
 	return nil
 }
 
-func (self *PIDManager) GetByAddress(id string) Process {
+func (self *PIDManager) GetByID(id string) Process {
 
 	if proc, ok := self.processByID[id]; ok {
 		return proc
@@ -41,7 +41,7 @@ func (self *PIDManager) GetByAddress(id string) Process {
 
 func (self *PIDManager) Get(pid *PID) Process {
 
-	if pid.Address != self.Address {
+	if pid.Domain != self.Domain {
 		return nil
 	}
 
@@ -54,16 +54,16 @@ func (self *PIDManager) Get(pid *PID) Process {
 
 func (self *PIDManager) Remove(pid *PID) {
 
-	if pid.Address != self.Address {
+	if pid.Domain != self.Domain {
 		return
 	}
 
 	delete(self.processByID, pid.Id)
 }
 
-func NewPIDManager(address string) *PIDManager {
+func NewPIDManager(domain string) *PIDManager {
 	return &PIDManager{
-		Address:     address,
+		Domain:      domain,
 		processByID: make(map[string]Process),
 	}
 
@@ -72,24 +72,24 @@ func NewPIDManager(address string) *PIDManager {
 var (
 	LocalPIDManager *PIDManager
 
-	pidmgrByAddress      = map[string]*PIDManager{}
-	pidmgrByAddressGuard sync.Mutex
+	pidmgrByDomain      = map[string]*PIDManager{}
+	pidmgrByDomainGuard sync.Mutex
 )
 
 // 找到对应地址的远程pid管理器
-func remotePIDManager(address string) *PIDManager {
+func remotePIDManager(domain string) *PIDManager {
 
-	pidmgrByAddressGuard.Lock()
+	pidmgrByDomainGuard.Lock()
 
-	defer pidmgrByAddressGuard.Unlock()
+	defer pidmgrByDomainGuard.Unlock()
 
-	if mgr, ok := pidmgrByAddress[address]; ok {
+	if mgr, ok := pidmgrByDomain[domain]; ok {
 		return mgr
 	}
 
-	mgr := NewPIDManager(address)
+	mgr := NewPIDManager(domain)
 
-	pidmgrByAddress[address] = mgr
+	pidmgrByDomain[domain] = mgr
 
 	return mgr
 }
@@ -99,7 +99,7 @@ func init() {
 	OnReset.Add(func(...interface{}) error {
 
 		LocalPIDManager = NewPIDManager("localhost")
-		pidmgrByAddress = map[string]*PIDManager{}
+		pidmgrByDomain = map[string]*PIDManager{}
 
 		return nil
 	})

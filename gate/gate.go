@@ -26,7 +26,7 @@ func Listen(address string) {
 
 		name := fmt.Sprintf("sid:%d", ev.Ses.ID())
 
-		clientPID := actor.NewTemplate().WithName(name).WithInstance(newOutboundClient()).Spawn()
+		clientPID := actor.NewTemplate().WithID(name).WithInstance(newOutboundClient(ev.Ses)).Spawn()
 
 		addClient(clientPID, ev.Ses)
 	})
@@ -42,7 +42,7 @@ func Listen(address string) {
 
 	peer.Start(address)
 
-	receiptor = actor.NewTemplate().WithName("gate_receiptor").WithFunc(func(c actor.Context) {
+	receiptor = actor.NewTemplate().WithID("gate_receiptor").WithFunc(func(c actor.Context) {
 		switch msg := c.Msg().(type) {
 		case *proto.BindClientACK:
 
@@ -51,7 +51,7 @@ func Listen(address string) {
 
 				log.Debugln("bind client, sesid: %d --> pid: %s", msg.ClientSessionID, c.Source())
 
-				pid := actor.NewPID(c.Source().Address, msg.ID)
+				pid := actor.NewPID(c.Source().Domain, msg.ID)
 
 				clientSes.SetTag(pid)
 			} else {

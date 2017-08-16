@@ -42,7 +42,7 @@ func (self *nexusProcess) Notify(data interface{}) {
 		msg.SourceID = m.SourcePID.Id
 	}
 
-	SendToSession(self.pid.Address, msg)
+	sendToDomain(self.pid.Domain, msg)
 }
 
 func (self *nexusProcess) Stop() {

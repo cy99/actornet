@@ -4,76 +4,92 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/davyxu/actornet/actor"
-	"github.com/davyxu/actornet/util"
 	"github.com/davyxu/cellnet"
+	"runtime"
+	"sync"
 )
 
 // =============================================
 // 管理进程内通过svcid标示的,到各服务器的连接
 // =============================================
 var (
-	sesLinkAddress *util.DuplexMap
+	sesByDomain      map[string]cellnet.Session
+	sesByDomainGuard sync.RWMutex
 )
 
 // 对一个服务器进程来说, 连到其他服务的, 只有1个
 
 // 通过给定远方的ServiceID, 来获取其session
-func ResolveAddressToSession(addr string) cellnet.Session {
+func resolveSessionByDomain(domain string) cellnet.Session {
 
-	if raw, ok := sesLinkAddress.MainBySlave(addr); ok {
-		return raw.(cellnet.Session)
+	sesByDomainGuard.RLock()
+
+	defer sesByDomainGuard.RUnlock()
+
+	if ses, ok := sesByDomain[domain]; ok {
+		return ses
 	}
 
 	return nil
 }
 
-func AddressBySession(ses cellnet.Session) string {
+func getDomainBySession(ses cellnet.Session) string {
 
-	if raw, ok := sesLinkAddress.SlaveByMain(ses); ok {
-		return raw.(string)
+	if tag := ses.Tag(); tag != nil {
+		return tag.(string)
 	}
 
 	return ""
 }
 
-func SendToSession(addr string, msg interface{}) {
+func sendToDomain(domain string, msg interface{}) {
 
-	ses := ResolveAddressToSession(addr)
+	ses := resolveSessionByDomain(domain)
 	if ses == nil {
 
-		log.Errorln("service not ready:", addr, Status())
+		log.Errorln("domain not exists:", domain, Status())
 		return
 	}
 
 	ses.Send(msg)
 }
 
-func Broadcast(msg interface{}) {
+func addServiceSession(domain string, ses cellnet.Session) {
 
-	sesLinkAddress.Visit(func(main, slave interface{}) bool {
-
-		main.(cellnet.Session).Send(msg)
-
-		return true
-	})
-}
-
-func addServiceSession(address string, ses cellnet.Session) {
-
-	if pre, ok := sesLinkAddress.MainBySlave(address); ok {
-		log.Warnf("duplicate svc session: %v, pre sesid:%d", address, pre.(cellnet.Session).ID())
+	if preSes := resolveSessionByDomain(domain); preSes != nil {
+		log.Warnf("Duplicate Domain, domain: %s, pre sesid:%d", domain, preSes.ID())
 	}
 
-	sesLinkAddress.Add(ses, address)
+	sesByDomainGuard.Lock()
+	sesByDomain[domain] = ses
+	ses.SetTag(domain)
+	sesByDomainGuard.Unlock()
 
-	log.Infof("svc session attach: %v  sid: %d", address, ses.ID())
+	log.Infof("Domain attach, domain: %s  sid: %d", domain, ses.ID())
 }
 
 func removeServiceSession(ses cellnet.Session) {
 
-	if raw, err := sesLinkAddress.RemoveByMain(ses); err == nil {
-		log.Infof("svc session detach: %v sid: %d", raw.(string), ses.ID())
+	if domain := getDomainBySession(ses); domain != "" {
+
+		log.Infof("Domain detach, domain: %s sid: %d", domain, ses.ID())
+
+		delete(sesByDomain, domain)
 	}
+}
+
+func WaitReady(domain string) {
+
+	// spin lock 自旋锁
+	for {
+
+		if resolveSessionByDomain(domain) != nil {
+			break
+		}
+
+		runtime.Gosched()
+	}
+
 }
 
 func Status() string {
@@ -82,15 +98,10 @@ func Status() string {
 
 	buffer.WriteString("=========Link Status=========\n")
 
-	sesLinkAddress.Visit(func(main, slave interface{}) bool {
+	for domain, ses := range sesByDomain {
 
-		ses := main.(cellnet.Session)
-		address := slave.(string)
-
-		buffer.WriteString(fmt.Sprintf("svcid:%s id:%d \n", address, ses.ID()))
-
-		return true
-	})
+		buffer.WriteString(fmt.Sprintf("domain: %s sid: %d \n", domain, ses.ID()))
+	}
 
 	return buffer.String()
 }
@@ -99,7 +110,7 @@ func init() {
 
 	actor.OnReset.Add(func(...interface{}) error {
 
-		sesLinkAddress = util.NewDuplexMap()
+		sesByDomain = make(map[string]cellnet.Session)
 
 		return nil
 	})

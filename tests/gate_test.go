@@ -45,20 +45,11 @@ func TestLinkBackend(t *testing.T) {
 
 	}
 
-	actor.NewTemplate().WithName("gate_assit").WithFunc(func(c actor.Context) {
+	gate.StartBackend(func() *actor.PID {
 
-		switch msg := c.Msg().(type) {
-		case *proto.BindClientREQ:
+		return actor.NewTemplate().WithFunc(onRouteMsg).Spawn()
 
-			serverActorID := actor.NewTemplate().WithFunc(onRouteMsg).Spawn()
-
-			c.Reply(&proto.BindClientACK{
-				ClientSessionID: msg.ClientSessionID,
-				ID:              serverActorID.Id,
-			})
-		}
-
-	}).Spawn()
+	})
 
 	wg.Wait()
 

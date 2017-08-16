@@ -3,14 +3,14 @@ package actor
 import "github.com/davyxu/actornet/util"
 
 type PID struct {
-	Address string
-	Id      string
+	Domain string
+	Id     string
 
 	proc Process
 }
 
 func (self *PID) IsLocal() bool {
-	return LocalPIDManager.Address == self.Address
+	return LocalPIDManager.Domain == self.Domain
 }
 
 func (self *PID) ref() Process {
@@ -21,7 +21,7 @@ func (self *PID) ref() Process {
 
 	if self.IsLocal() {
 
-		p := LocalPIDManager.GetByAddress(self.Id)
+		p := LocalPIDManager.GetByID(self.Id)
 		if p != nil {
 			self.proc = p
 			return p
@@ -29,9 +29,9 @@ func (self *PID) ref() Process {
 
 	} else if RemoteProcessCreator != nil {
 
-		mgr := remotePIDManager(self.Address)
+		mgr := remotePIDManager(self.Domain)
 
-		proc := mgr.GetByAddress(self.Id)
+		proc := mgr.GetByID(self.Id)
 
 		if proc == nil {
 			proc = RemoteProcessCreator(self)
@@ -99,20 +99,20 @@ func (self *PID) String() string {
 	if self == nil {
 		return "nil"
 	}
-	return self.Address + "/" + self.Id
+	return self.Domain + "/" + self.Id
 }
 
-func NewPID(address, id string) *PID {
+func NewPID(domain, id string) *PID {
 	return &PID{
-		Address: address,
-		Id:      id,
+		Domain: domain,
+		Id:     id,
 	}
 }
 
 func NewLocalPID(id string) *PID {
 	return &PID{
-		Address: LocalPIDManager.Address,
-		Id:      id,
+		Domain: LocalPIDManager.Domain,
+		Id:     id,
 	}
 }
 

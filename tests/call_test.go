@@ -20,7 +20,7 @@ func TestCrossProcessCallServer(t *testing.T) {
 
 	wg.Add(1)
 
-	actor.NewTemplate().WithName("server").WithFunc(func(c actor.Context) {
+	actor.NewTemplate().WithID("echo").WithFunc(func(c actor.Context) {
 
 		switch msg := c.Msg().(type) {
 		case *proto.TestMsg:
@@ -36,6 +36,9 @@ func TestCrossProcessCallServer(t *testing.T) {
 	}).Spawn()
 
 	wg.Wait()
+
+	// 等待发送完毕
+	time.Sleep(time.Second)
 }
 
 func TestCrossProcessCallClient(t *testing.T) {
@@ -47,13 +50,13 @@ func TestCrossProcessCallClient(t *testing.T) {
 	nexus.Connect("127.0.0.1:8081", "client")
 
 	// 等待客户端连接上服务器
-	time.Sleep(time.Second)
+	nexus.WaitReady("server")
 
 	var wg sync.WaitGroup
 
 	wg.Add(1)
 
-	client := actor.NewTemplate().WithName("client").WithFunc(func(c actor.Context) {
+	client := actor.NewTemplate().WithID("client").WithFunc(func(c actor.Context) {
 
 		switch msg := c.Msg().(type) {
 		case *proto.TestMsg:
@@ -66,7 +69,7 @@ func TestCrossProcessCallClient(t *testing.T) {
 
 	}).Spawn()
 
-	target := actor.NewPID("127.0.0.1:8081", "server")
+	target := actor.NewPID("server", "echo")
 	reply := target.Call(proto.TestMsg{Msg: "hello"}, client)
 
 	if msg := reply.(*proto.TestMsg).Msg; msg == "hello" {

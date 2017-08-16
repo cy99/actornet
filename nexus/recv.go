@@ -56,9 +56,9 @@ func onRouter(ev *cellnet.Event) {
 		return
 	}
 
-	address := AddressBySession(ev.Ses)
+	address := getDomainBySession(ev.Ses)
 
-	tgtProc := actor.LocalPIDManager.GetByAddress(msg.TargetID)
+	tgtProc := actor.LocalPIDManager.GetByID(msg.TargetID)
 
 	if tgtProc != nil {
 
