@@ -1,22 +1,29 @@
 package proto
 
 import (
-	"github.com/davyxu/goobjfmt"
+	_ "github.com/davyxu/cellnet/codec/binary"
 )
 
 type Start struct {
 }
 
-func (m *Start) String() string { return goobjfmt.CompactTextString(m) }
-
 type Stop struct {
 }
 
-func (m *Stop) String() string { return goobjfmt.CompactTextString(m) }
+// 路由到另外一个进程
+type Route struct {
+	SourceID string
+	TargetID string
+	MsgID    uint32
+	MsgData  []byte
+	CallID   int64
+}
+
+type ServiceIdentify struct {
+	Domain string
+}
 
 type Serialize struct {
 	Hello int32
 	Ser   interface{} `obj:"-"`
 }
-
-func (m *Serialize) String() string { return goobjfmt.CompactTextString(m) }
