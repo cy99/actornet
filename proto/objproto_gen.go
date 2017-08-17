@@ -8,23 +8,23 @@ import (
 	"reflect"
 )
 
-func (self *TestMsg) String() string         { return goobjfmt.CompactTextString(self) }
-func (self *BindClientREQ) String() string   { return goobjfmt.CompactTextString(self) }
-func (self *BindClientACK) String() string   { return goobjfmt.CompactTextString(self) }
-func (self *Start) String() string           { return goobjfmt.CompactTextString(self) }
-func (self *Stop) String() string            { return goobjfmt.CompactTextString(self) }
-func (self *Route) String() string           { return goobjfmt.CompactTextString(self) }
-func (self *ServiceIdentify) String() string { return goobjfmt.CompactTextString(self) }
-func (self *Serialize) String() string       { return goobjfmt.CompactTextString(self) }
+func (self *TestMsgACK) String() string        { return goobjfmt.CompactTextString(self) }
+func (self *BindClientREQ) String() string     { return goobjfmt.CompactTextString(self) }
+func (self *BindClientACK) String() string     { return goobjfmt.CompactTextString(self) }
+func (self *Start) String() string             { return goobjfmt.CompactTextString(self) }
+func (self *Stop) String() string              { return goobjfmt.CompactTextString(self) }
+func (self *SystemExit) String() string        { return goobjfmt.CompactTextString(self) }
+func (self *RouteACK) String() string          { return goobjfmt.CompactTextString(self) }
+func (self *DomainIdentifyACK) String() string { return goobjfmt.CompactTextString(self) }
 
 func init() {
 
-	cellnet.RegisterMessageMeta("binary", "proto.TestMsg", reflect.TypeOf((*TestMsg)(nil)).Elem(), 2613217940)
+	cellnet.RegisterMessageMeta("binary", "proto.TestMsgACK", reflect.TypeOf((*TestMsgACK)(nil)).Elem(), 2238643133)
 	cellnet.RegisterMessageMeta("binary", "proto.BindClientREQ", reflect.TypeOf((*BindClientREQ)(nil)).Elem(), 2423039609)
 	cellnet.RegisterMessageMeta("binary", "proto.BindClientACK", reflect.TypeOf((*BindClientACK)(nil)).Elem(), 4214643227)
 	cellnet.RegisterMessageMeta("binary", "proto.Start", reflect.TypeOf((*Start)(nil)).Elem(), 3048584699)
 	cellnet.RegisterMessageMeta("binary", "proto.Stop", reflect.TypeOf((*Stop)(nil)).Elem(), 2782698386)
-	cellnet.RegisterMessageMeta("binary", "proto.Route", reflect.TypeOf((*Route)(nil)).Elem(), 1693126123)
-	cellnet.RegisterMessageMeta("binary", "proto.ServiceIdentify", reflect.TypeOf((*ServiceIdentify)(nil)).Elem(), 4058603205)
-	cellnet.RegisterMessageMeta("binary", "proto.Serialize", reflect.TypeOf((*Serialize)(nil)).Elem(), 3744539852)
+	cellnet.RegisterMessageMeta("binary", "proto.SystemExit", reflect.TypeOf((*SystemExit)(nil)).Elem(), 3199756597)
+	cellnet.RegisterMessageMeta("binary", "proto.RouteACK", reflect.TypeOf((*RouteACK)(nil)).Elem(), 892591827)
+	cellnet.RegisterMessageMeta("binary", "proto.DomainIdentifyACK", reflect.TypeOf((*DomainIdentifyACK)(nil)).Elem(), 3151462984)
 }

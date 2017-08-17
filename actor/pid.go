@@ -51,15 +51,12 @@ func (self *PID) ref() Process {
 	return nil
 }
 
-func (self *PID) NotifyData(data interface{}) {
+func (self *PID) Notify(data interface{}) {
 
-	self.ref().Notify(&Message{
-		Data:      data,
-		TargetPID: self,
-	})
+	self.NotifyBySender(data, nil)
 }
 
-func (self *PID) NotifyDataBySender(data interface{}, sender *PID) {
+func (self *PID) NotifyBySender(data interface{}, sender *PID) {
 
 	self.ref().Notify(&Message{
 		Data:      data,

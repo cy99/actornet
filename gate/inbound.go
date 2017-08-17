@@ -6,8 +6,6 @@ import (
 	"github.com/davyxu/cellnet"
 )
 
-var assitActor *actor.PID
-
 type inboundHandler struct {
 }
 
@@ -25,7 +23,7 @@ func (self *inboundHandler) Call(ev *cellnet.Event) {
 
 			log.Debugf("direct route: %s -> %s (%s)", outboundPID.String(), backendPID.String())
 
-			backendPID.NotifyDataBySender(ev.Msg, outboundPID)
+			backendPID.NotifyBySender(ev.Msg, outboundPID)
 
 		} else {
 
@@ -33,7 +31,7 @@ func (self *inboundHandler) Call(ev *cellnet.Event) {
 
 			switch ev.Msg.(type) {
 			case *proto.BindClientREQ:
-				assitActor.NotifyDataBySender(&proto.BindClientREQ{ev.Ses.ID()}, receiptor)
+				backendAssit.NotifyBySender(&proto.BindClientREQ{ev.Ses.ID()}, receiptor)
 			}
 
 		}
@@ -45,7 +43,10 @@ func newInboundHandler() cellnet.EventHandler {
 	return &inboundHandler{}
 }
 
+// 后台的辅助actor
+var backendAssit *actor.PID
+
 func init() {
 
-	assitActor = actor.NewPID("server", "gate_assit")
+	backendAssit = actor.NewPID("server", "gate_assit")
 }

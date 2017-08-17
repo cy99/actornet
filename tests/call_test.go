@@ -23,7 +23,7 @@ func TestCrossProcessCallServer(t *testing.T) {
 	actor.NewTemplate().WithID("echo").WithFunc(func(c actor.Context) {
 
 		switch msg := c.Msg().(type) {
-		case *proto.TestMsg:
+		case *proto.TestMsgACK:
 
 			if msg.Msg == "hello" {
 
@@ -59,7 +59,7 @@ func TestCrossProcessCallClient(t *testing.T) {
 	client := actor.NewTemplate().WithID("client").WithFunc(func(c actor.Context) {
 
 		switch msg := c.Msg().(type) {
-		case *proto.TestMsg:
+		case *proto.TestMsgACK:
 
 			if msg.Msg == "hello" {
 				wg.Done()
@@ -70,9 +70,9 @@ func TestCrossProcessCallClient(t *testing.T) {
 	}).Spawn()
 
 	target := actor.NewPID("server", "echo")
-	reply := target.Call(proto.TestMsg{Msg: "hello"}, client)
+	reply := target.Call(proto.TestMsgACK{Msg: "hello"}, client)
 
-	if msg := reply.(*proto.TestMsg).Msg; msg == "hello" {
+	if msg := reply.(*proto.TestMsgACK).Msg; msg == "hello" {
 		log.Debugln("recved reply", msg)
 		wg.Done()
 	}

@@ -15,10 +15,10 @@ func Listen(address string, domain string) {
 
 	actor.LocalPIDManager.Domain = domain
 
-	cellnet.RegisterMessage(peer, "proto.ServiceIdentify", func(ev *cellnet.Event) {
-		msg := ev.Msg.(*proto.ServiceIdentify)
+	cellnet.RegisterMessage(peer, "proto.DomainIdentifyACK", func(ev *cellnet.Event) {
+		msg := ev.Msg.(*proto.DomainIdentifyACK)
 
-		ev.Send(&proto.ServiceIdentify{
+		ev.Send(&proto.DomainIdentifyACK{
 			Domain: domain,
 		})
 
@@ -32,6 +32,6 @@ func Listen(address string, domain string) {
 
 	})
 
-	cellnet.RegisterMessage(peer, "proto.Route", onRouter)
+	cellnet.RegisterMessage(peer, "proto.RouteACK", onRouter)
 
 }

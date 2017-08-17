@@ -31,7 +31,7 @@ func (self *nexusProcess) Notify(data interface{}) {
 		return
 	}
 
-	msg := &proto.Route{
+	msg := &proto.RouteACK{
 		TargetID: self.pid.Id,
 		MsgID:    msgid,
 		MsgData:  msgdata,

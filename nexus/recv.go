@@ -48,7 +48,7 @@ func checkHijack(m *actor.Message) bool {
 
 func onRouter(ev *cellnet.Event) {
 
-	msg := ev.Msg.(*proto.Route)
+	msg := ev.Msg.(*proto.RouteACK)
 
 	userMsg, err := cellnet.DecodeMessage(msg.MsgID, msg.MsgData)
 	if err != nil {

@@ -22,7 +22,7 @@ func TestCrossProcessNotifyServer(t *testing.T) {
 	actor.NewTemplate().WithID("echo").WithFunc(func(c actor.Context) {
 
 		switch msg := c.Msg().(type) {
-		case *proto.TestMsg:
+		case *proto.TestMsgACK:
 			t.Log(msg.Msg)
 
 			if msg.Msg == "hello" {
@@ -60,7 +60,7 @@ func TestCrossProcessNotifyClient(t *testing.T) {
 	client := actor.NewTemplate().WithID("client").WithFunc(func(c actor.Context) {
 
 		switch msg := c.Msg().(type) {
-		case *proto.TestMsg:
+		case *proto.TestMsgACK:
 
 			if msg.Msg == "hello" {
 				wg.Done()
@@ -71,7 +71,7 @@ func TestCrossProcessNotifyClient(t *testing.T) {
 	}).Spawn()
 
 	target := actor.NewPID("server", "echo")
-	target.NotifyDataBySender(proto.TestMsg{Msg: "hello"}, client)
+	target.NotifyBySender(proto.TestMsgACK{Msg: "hello"}, client)
 
 	wg.Wait()
 }

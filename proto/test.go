@@ -1,6 +1,6 @@
 package proto
 
-type TestMsg struct {
+type TestMsgACK struct {
 	Msg string
 }
 

@@ -27,7 +27,7 @@ func TestLinkBackend(t *testing.T) {
 	onRouteMsg := func(c actor.Context) {
 
 		switch msg := c.Msg().(type) {
-		case *proto.TestMsg:
+		case *proto.TestMsgACK:
 
 			log.Debugln("server recv", msg, c.Source())
 
@@ -38,6 +38,9 @@ func TestLinkBackend(t *testing.T) {
 					log.Debugln("send back")
 
 					c.Reply(msg)
+
+					// 通知网关退出
+					actor.NewPID("gate", "system").Notify(&proto.SystemExit{Code: 0})
 				}
 
 			}
@@ -85,12 +88,12 @@ func TestLinkClient(t *testing.T) {
 
 		time.Sleep(time.Second)
 
-		ev.Send(&proto.TestMsg{"hello"})
+		ev.Send(&proto.TestMsgACK{"hello"})
 	})
 
-	cellnet.RegisterMessage(peer, "proto.TestMsg", func(ev *cellnet.Event) {
+	cellnet.RegisterMessage(peer, "proto.TestMsgACK", func(ev *cellnet.Event) {
 
-		msg := ev.Msg.(*proto.TestMsg)
+		msg := ev.Msg.(*proto.TestMsgACK)
 
 		if msg.Msg == "hello" {
 			wg.Done()

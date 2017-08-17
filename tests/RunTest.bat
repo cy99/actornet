@@ -18,8 +18,9 @@ test.exe -test.v -test.run TestRPC
 test.exe -test.v -test.run TestSerialize
 @IF %ERRORLEVEL% NEQ 0 pause
 
-start test.exe -test.v -test.run TestCrossProcessNotifyServer
-test.exe -test.v -test.run TestCrossProcessNotifyClient
+start test.exe -test.v -test.run TestLinkGate
+start test.exe -test.v -test.run TestLinkBackend
+test.exe -test.v -test.run TestLinkClient
 @IF %ERRORLEVEL% NEQ 0 pause
 ping -n 2 127.1>nul
 
@@ -28,6 +29,13 @@ start test.exe -test.v -test.run TestCrossProcessCallServer
 test.exe -test.v -test.run TestCrossProcessCallClient
 @IF %ERRORLEVEL% NEQ 0 pause
 ping -n 2 127.1>nul
+
+
+start test.exe -test.v -test.run TestCrossProcessNotifyServer
+test.exe -test.v -test.run TestCrossProcessNotifyClient
+@IF %ERRORLEVEL% NEQ 0 pause
+ping -n 2 127.1>nul
+
 
 
 del /q test.exe

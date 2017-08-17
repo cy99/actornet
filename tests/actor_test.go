@@ -26,7 +26,7 @@ func TestHelloWorld(t *testing.T) {
 
 	}).Spawn()
 
-	pid.NotifyData("hello")
+	pid.Notify("hello")
 
 	wg.Wait()
 }
@@ -42,7 +42,7 @@ func TestEcho(t *testing.T) {
 			log.Debugln("server recv", msg)
 
 			if c.Source() != nil {
-				c.Source().NotifyDataBySender(msg, c.Self())
+				c.Source().NotifyBySender(msg, c.Self())
 			}
 
 		}
@@ -61,7 +61,7 @@ func TestEcho(t *testing.T) {
 		case *proto.Start:
 			log.Debugln("client start")
 
-			server.NotifyDataBySender("hello", c.Self())
+			server.NotifyBySender("hello", c.Self())
 		case string:
 			log.Debugln("client recv", data)
 

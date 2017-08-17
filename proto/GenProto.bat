@@ -9,4 +9,6 @@ go build -o objprotogen.exe github.com/davyxu/cellnet/objprotogen
 objprotogen.exe --out objproto_gen.go test.go sys.go
 @IF %ERRORLEVEL% NEQ 0 pause
 
+ping -n 1 127.1>nul
 
+del /q objprotogen.exe

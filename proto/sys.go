@@ -4,14 +4,21 @@ import (
 	_ "github.com/davyxu/cellnet/codec/binary"
 )
 
+// 一个Actor启动时
 type Start struct {
 }
 
+// 一个Actor停止时
 type Stop struct {
 }
 
+// 整个物理进程退出
+type SystemExit struct {
+	Code int32
+}
+
 // 路由到另外一个进程
-type Route struct {
+type RouteACK struct {
 	SourceID string
 	TargetID string
 	MsgID    uint32
@@ -19,11 +26,7 @@ type Route struct {
 	CallID   int64
 }
 
-type ServiceIdentify struct {
+// 领域标识
+type DomainIdentifyACK struct {
 	Domain string
-}
-
-type Serialize struct {
-	Hello int32
-	Ser   interface{} `obj:"-"`
 }

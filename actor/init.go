@@ -1,6 +1,7 @@
 package actor
 
 import (
+	"github.com/davyxu/actornet/proto"
 	"github.com/davyxu/actornet/util"
 )
 
@@ -33,6 +34,20 @@ func StartSystem() {
 	OnReset.Invoke()
 
 	exitSignal = make(chan int)
+
+	NewTemplate().WithID("system").WithFunc(func(c Context) {
+
+		switch msg := c.Msg().(type) {
+		case *proto.SystemExit:
+			Exit(int(msg.Code))
+		}
+
+	}).Spawn()
+}
+
+// 退出
+func Exit(exitcode int) {
+	exitSignal <- exitcode
 }
 
 func LoopSystem() int {

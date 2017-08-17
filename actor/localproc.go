@@ -80,13 +80,7 @@ func (self *localProcess) OnRecv(data interface{}) {
 		log.Debugf("#recv %s", data.(Context).String())
 	}
 
-	if sermsg, ok := ctx.Msg().(*proto.Serialize); ok {
-		self.a.(Serializable).OnSerialize(sermsg.Ser.(Serializer))
-		ctx.Reply(nil)
-	} else {
-		self.a.OnRecv(ctx)
-	}
-
+	self.a.OnRecv(ctx)
 }
 
 func newLocalProcess(a Actor, pid *PID) *localProcess {

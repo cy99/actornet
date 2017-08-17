@@ -14,13 +14,13 @@ func Connect(address string, domain string) {
 
 	cellnet.RegisterMessage(peer, "coredef.SessionConnected", func(ev *cellnet.Event) {
 
-		ev.Send(&proto.ServiceIdentify{
+		ev.Send(&proto.DomainIdentifyACK{
 			Domain: domain,
 		})
 	})
 
-	cellnet.RegisterMessage(peer, "proto.ServiceIdentify", func(ev *cellnet.Event) {
-		msg := ev.Msg.(*proto.ServiceIdentify)
+	cellnet.RegisterMessage(peer, "proto.DomainIdentifyACK", func(ev *cellnet.Event) {
+		msg := ev.Msg.(*proto.DomainIdentifyACK)
 
 		addServiceSession(msg.Domain, ev.Ses)
 	})
@@ -31,5 +31,5 @@ func Connect(address string, domain string) {
 
 	})
 
-	cellnet.RegisterMessage(peer, "proto.Route", onRouter)
+	cellnet.RegisterMessage(peer, "proto.RouteACK", onRouter)
 }
