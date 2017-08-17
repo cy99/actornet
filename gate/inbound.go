@@ -14,14 +14,11 @@ func (self *inboundHandler) Call(ev *cellnet.Event) {
 
 	if ev.Type == cellnet.Event_Recv {
 
-		tag := ev.Ses.Tag()
-		if tag != nil {
+		backendPID, outboundPID := GetSessionBinding(ev.Ses)
 
-			backendPID := tag.(*actor.PID)
+		if outboundPID != nil && backendPID != nil {
 
-			outboundPID := PIDBySession(ev.Ses)
-
-			log.Debugf("direct route: %s -> %s (%s)", outboundPID.String(), backendPID.String())
+			log.Debugf("direct route: %s -> %s", outboundPID.String(), backendPID.String())
 
 			backendPID.NotifyBySender(ev.Msg, outboundPID)
 

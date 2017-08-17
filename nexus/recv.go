@@ -77,7 +77,7 @@ func onRouter(ev *cellnet.Event) {
 		}
 
 	} else {
-		log.Errorln("node not found:", msg.TargetID)
+		log.Errorf("target not found,  id: %s", msg.TargetID)
 	}
 
 }

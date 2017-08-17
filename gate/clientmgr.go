@@ -4,46 +4,54 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/davyxu/actornet/actor"
-	"github.com/davyxu/actornet/util"
 	"github.com/davyxu/cellnet"
 )
 
-var (
-	sesLinkPID *util.DuplexMap
-)
-
-func ServiceSessionByPID(pid *actor.PID) cellnet.Session {
-
-	if raw, ok := sesLinkPID.MainBySlave(pid); ok {
-		return raw.(cellnet.Session)
-	}
-
-	return nil
+type sesBinding struct {
+	outbound *actor.PID // 下发客户端的actor
+	backend  *actor.PID // 绑定的后台actor
 }
 
-func PIDBySession(ses cellnet.Session) *actor.PID {
+func GetSessionBinding(ses cellnet.Session) (backend, outbound *actor.PID) {
 
-	if raw, ok := sesLinkPID.SlaveByMain(ses); ok {
-		return raw.(*actor.PID)
-	}
+	b := rawSessionBinding(ses)
 
-	return nil
+	backend = b.backend
+	outbound = b.outbound
+
+	return
 }
 
-func addClient(pid *actor.PID, ses cellnet.Session) {
+func rawSessionBinding(ses cellnet.Session) (ret *sesBinding) {
+	tag := ses.Tag()
 
-	sesLinkPID.Add(ses, pid)
+	if tag == nil {
+		ret = &sesBinding{}
+		ses.SetTag(ret)
+	} else {
+		ret = tag.(*sesBinding)
+	}
 
-	log.Infof("client attach, sid: %d  pid: %s", ses.ID(), pid.String())
+	return
+}
+
+func addClient(outbound, backend *actor.PID, ses cellnet.Session) {
+
+	bind := rawSessionBinding(ses)
+	bind.outbound = outbound
+	bind.backend = backend
+
+	log.Infof("client bind, sid: %d  outbound: %s <- backend: %s", ses.ID(), outbound.String(), backend.String())
 }
 
 func removeClient(ses cellnet.Session) *actor.PID {
 
-	if raw, err := sesLinkPID.RemoveByMain(ses); err == nil {
+	binding := rawSessionBinding(ses)
 
-		pid := raw.(*actor.PID)
-		log.Infof("client detach: sid: %d pid: %s", ses.ID(), pid.String())
-		return pid
+	if binding.outbound != nil {
+		log.Infof("client erase: sid: %d pid: %s", ses.ID(), binding.outbound.String())
+		ses.SetTag(nil)
+		return binding.outbound
 	}
 
 	return nil
@@ -53,14 +61,13 @@ func Status() string {
 
 	var buffer bytes.Buffer
 
-	buffer.WriteString("=========Client Status=========\n")
+	buffer.WriteString("\n=========Client Status=========\n")
 
-	sesLinkPID.Visit(func(main, slave interface{}) bool {
+	acceptor.VisitSession(func(ses cellnet.Session) bool {
 
-		ses := main.(cellnet.Session)
-		pid := slave.(*actor.PID)
+		backendPID, outboundPID := GetSessionBinding(ses)
 
-		buffer.WriteString(fmt.Sprintf("client sid:%s pid: %s \n", ses.ID(), pid.String()))
+		buffer.WriteString(fmt.Sprintf("client sid:%s outbound: %s  backend: %s\n", ses.ID(), outboundPID.String(), backendPID.String()))
 
 		return true
 	})
@@ -71,8 +78,6 @@ func Status() string {
 func init() {
 
 	actor.OnReset.Add(func(...interface{}) error {
-
-		sesLinkPID = util.NewDuplexMap()
 
 		return nil
 	})

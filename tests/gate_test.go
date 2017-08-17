@@ -70,6 +70,8 @@ func TestLinkGate(t *testing.T) {
 	gate.Listen("127.0.0.1:8031")
 
 	actor.LoopSystem()
+
+	time.Sleep(time.Second)
 }
 
 func TestLinkClient(t *testing.T) {
@@ -84,9 +86,12 @@ func TestLinkClient(t *testing.T) {
 	// 客户端连接
 	cellnet.RegisterMessage(peer, "coredef.SessionConnected", func(ev *cellnet.Event) {
 
+		// 绑定网关
 		ev.Send(&proto.BindClientREQ{})
+	})
 
-		time.Sleep(time.Second)
+	// 绑定完成, 可以发包
+	cellnet.RegisterMessage(peer, "proto.BindClientACK", func(ev *cellnet.Event) {
 
 		ev.Send(&proto.TestMsgACK{"hello"})
 	})

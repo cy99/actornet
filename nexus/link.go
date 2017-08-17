@@ -96,7 +96,7 @@ func Status() string {
 
 	var buffer bytes.Buffer
 
-	buffer.WriteString("=========Link Status=========\n")
+	buffer.WriteString("\n=========Link Status=========\n")
 
 	for domain, ses := range sesByDomain {
 

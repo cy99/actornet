@@ -10,29 +10,21 @@ import (
 
 var receiptor *actor.PID
 
+var acceptor cellnet.Peer
+
 func Listen(address string) {
 
-	peer := socket.NewAcceptor(nil)
+	acceptor = socket.NewAcceptor(nil)
 
 	// 添加客户端消息侦听
-	peer.AddChainRecv(
+	acceptor.AddChainRecv(
 		cellnet.NewHandlerChain(
 			newInboundHandler(),
 		),
 	)
 
-	// 客户端连接
-	cellnet.RegisterMessage(peer, "coredef.SessionAccepted", func(ev *cellnet.Event) {
-
-		name := fmt.Sprintf("sid:%d", ev.Ses.ID())
-
-		clientPID := actor.NewTemplate().WithID(name).WithInstance(newOutboundClient(ev.Ses)).Spawn()
-
-		addClient(clientPID, ev.Ses)
-	})
-
 	// 客户端断开
-	cellnet.RegisterMessage(peer, "coredef.SessionClosed", func(ev *cellnet.Event) {
+	cellnet.RegisterMessage(acceptor, "coredef.SessionClosed", func(ev *cellnet.Event) {
 
 		pid := removeClient(ev.Ses)
 		if pid != nil {
@@ -40,20 +32,26 @@ func Listen(address string) {
 		}
 	})
 
-	peer.Start(address)
+	acceptor.Start(address)
 
 	receiptor = actor.NewTemplate().WithID("gate_receiptor").WithFunc(func(c actor.Context) {
 		switch msg := c.Msg().(type) {
 		case *proto.BindClientACK:
 
-			clientSes := peer.GetSession(msg.ClientSessionID)
+			clientSes := acceptor.GetSession(msg.ClientSessionID)
 			if clientSes != nil {
 
-				log.Debugln("bind client, sesid: %d --> pid: %s", msg.ClientSessionID, c.Source())
+				backendPID := actor.NewPID(c.Source().Domain, msg.ID)
 
-				pid := actor.NewPID(c.Source().Domain, msg.ID)
+				outboundName := fmt.Sprintf("sid:%d", clientSes.ID())
 
-				clientSes.SetTag(pid)
+				outboundPID := actor.NewTemplate().WithID(outboundName).WithInstance(newOutboundClient(clientSes)).Spawn()
+
+				addClient(outboundPID, backendPID, clientSes)
+
+				// 回应客户端
+				clientSes.Send(&proto.BindClientACK{})
+
 			} else {
 				log.Warnln("BindClinet: client session not found: ", msg.ClientSessionID)
 			}
