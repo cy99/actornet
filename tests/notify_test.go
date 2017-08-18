@@ -71,7 +71,7 @@ func TestCrossProcessNotifyClient(t *testing.T) {
 	}).Spawn()
 
 	target := actor.NewPID("server", "echo")
-	target.NotifyBySender(proto.TestMsgACK{Msg: "hello"}, client)
+	target.TellBySender(proto.TestMsgACK{Msg: "hello"}, client)
 
 	wg.Wait()
 }

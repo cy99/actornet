@@ -4,6 +4,10 @@ import (
 	"bytes"
 )
 
+type Serializable interface {
+	OnSerialize(Serializer)
+}
+
 type Serializer interface {
 	IsLoading() bool
 

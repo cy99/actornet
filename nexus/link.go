@@ -3,23 +3,17 @@ package nexus
 import (
 	"bytes"
 	"fmt"
-	"github.com/davyxu/actornet/actor"
 	"github.com/davyxu/cellnet"
 	"runtime"
 	"sync"
 )
 
-// =============================================
-// 管理进程内通过svcid标示的,到各服务器的连接
-// =============================================
 var (
 	sesByDomain      map[string]cellnet.Session
 	sesByDomainGuard sync.RWMutex
 )
 
-// 对一个服务器进程来说, 连到其他服务的, 只有1个
-
-// 通过给定远方的ServiceID, 来获取其session
+// 根据域名, 解析其对应的会话
 func resolveSessionByDomain(domain string) cellnet.Session {
 
 	sesByDomainGuard.RLock()
@@ -33,6 +27,7 @@ func resolveSessionByDomain(domain string) cellnet.Session {
 	return nil
 }
 
+// 根据会话, 取其域名
 func getDomainBySession(ses cellnet.Session) string {
 
 	if tag := ses.Tag(); tag != nil {
@@ -42,6 +37,7 @@ func getDomainBySession(ses cellnet.Session) string {
 	return ""
 }
 
+// 给域名服务器发送消息
 func sendToDomain(domain string, msg interface{}) {
 
 	ses := resolveSessionByDomain(domain)
@@ -78,9 +74,9 @@ func removeServiceSession(ses cellnet.Session) {
 	}
 }
 
+// 等待服务器连接上
 func WaitReady(domain string) {
 
-	// spin lock 自旋锁
 	for {
 
 		if resolveSessionByDomain(domain) != nil {
@@ -92,6 +88,7 @@ func WaitReady(domain string) {
 
 }
 
+// 当前连接状态
 func Status() string {
 
 	var buffer bytes.Buffer
@@ -108,11 +105,6 @@ func Status() string {
 
 func init() {
 
-	actor.OnReset.Add(func(...interface{}) error {
-
-		sesByDomain = make(map[string]cellnet.Session)
-
-		return nil
-	})
+	sesByDomain = make(map[string]cellnet.Session)
 
 }

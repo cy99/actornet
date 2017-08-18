@@ -74,12 +74,3 @@ func Status() string {
 
 	return buffer.String()
 }
-
-func init() {
-
-	actor.OnReset.Add(func(...interface{}) error {
-
-		return nil
-	})
-
-}

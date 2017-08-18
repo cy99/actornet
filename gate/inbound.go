@@ -20,7 +20,7 @@ func (self *inboundHandler) Call(ev *cellnet.Event) {
 
 			log.Debugf("direct route: %s -> %s", outboundPID.String(), backendPID.String())
 
-			backendPID.NotifyBySender(ev.Msg, outboundPID)
+			backendPID.TellBySender(ev.Msg, outboundPID)
 
 		} else {
 
@@ -28,7 +28,7 @@ func (self *inboundHandler) Call(ev *cellnet.Event) {
 
 			switch ev.Msg.(type) {
 			case *proto.BindClientREQ:
-				backendAssit.NotifyBySender(&proto.BindClientREQ{ev.Ses.ID()}, receiptor)
+				backendAssit.TellBySender(&proto.BindClientREQ{ev.Ses.ID()}, receiptor)
 			}
 
 		}

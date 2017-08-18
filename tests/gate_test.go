@@ -40,7 +40,7 @@ func TestLinkBackend(t *testing.T) {
 					c.Reply(msg)
 
 					// 通知网关退出
-					actor.NewPID("gate", "system").Notify(&proto.SystemExit{Code: 0})
+					actor.NewPID("gate", "system").Tell(&proto.SystemExit{Code: 0})
 				}
 
 			}

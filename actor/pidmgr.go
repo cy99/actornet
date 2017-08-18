@@ -96,12 +96,7 @@ func remotePIDManager(domain string) *PIDManager {
 
 func init() {
 
-	OnReset.Add(func(...interface{}) error {
-
-		LocalPIDManager = NewPIDManager("localhost")
-		pidmgrByDomain = map[string]*PIDManager{}
-
-		return nil
-	})
+	LocalPIDManager = NewPIDManager("localhost")
+	pidmgrByDomain = map[string]*PIDManager{}
 
 }

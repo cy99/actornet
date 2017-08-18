@@ -1,16 +1,31 @@
 package actor
 
-import "github.com/davyxu/actornet/util"
+import (
+	"github.com/davyxu/actornet/proto"
+	"github.com/davyxu/actornet/util"
+)
 
 type PID struct {
 	Domain string
 	Id     string
 
-	proc Process
+	proc Process `binary:"-" text:"-"`
 }
 
 func (self *PID) IsLocal() bool {
 	return LocalPIDManager.Domain == self.Domain
+}
+
+func (self *PID) ToProto() proto.PID {
+	return proto.PID{
+		Domain: self.Domain,
+		Id:     self.Id,
+	}
+}
+
+func (self *PID) FromProto(pid proto.PID) {
+	self.Domain = pid.Domain
+	self.Id = pid.Id
 }
 
 func (self *PID) ref() Process {
@@ -51,14 +66,14 @@ func (self *PID) ref() Process {
 	return nil
 }
 
-func (self *PID) Notify(data interface{}) {
+func (self *PID) Tell(data interface{}) {
 
-	self.NotifyBySender(data, nil)
+	self.TellBySender(data, nil)
 }
 
-func (self *PID) NotifyBySender(data interface{}, sender *PID) {
+func (self *PID) TellBySender(data interface{}, sender *PID) {
 
-	self.ref().Notify(&Message{
+	self.ref().Tell(&Message{
 		Data:      data,
 		TargetPID: self,
 		SourcePID: sender,
@@ -82,7 +97,7 @@ func (self *PID) CallFuture(data interface{}, sender *PID) *util.Future {
 
 	f := proc.CreateRPC(callid)
 
-	self.ref().Notify(&Message{
+	self.ref().Tell(&Message{
 		Data:      data,
 		TargetPID: self,
 		SourcePID: sender,
@@ -100,6 +115,12 @@ func (self *PID) String() string {
 }
 
 func NewPID(domain, id string) *PID {
+
+	// 是本地pid时, 直接取已经存在的进程, 避免同地址pid指针不同
+	if domain == LocalPIDManager.Domain {
+		return NewLocalPID(id)
+	}
+
 	return &PID{
 		Domain: domain,
 		Id:     id,
@@ -107,6 +128,11 @@ func NewPID(domain, id string) *PID {
 }
 
 func NewLocalPID(id string) *PID {
+
+	if proc := LocalPIDManager.GetByID(id); proc != nil {
+		return proc.PID()
+	}
+
 	return &PID{
 		Domain: LocalPIDManager.Domain,
 		Id:     id,

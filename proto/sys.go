@@ -4,6 +4,11 @@ import (
 	_ "github.com/davyxu/cellnet/codec/binary"
 )
 
+type PID struct {
+	Domain string
+	Id     string
+}
+
 // 一个Actor启动时
 type Start struct {
 }

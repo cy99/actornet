@@ -73,7 +73,7 @@ func onRouter(ev *cellnet.Event) {
 		}
 
 		if checkHijack(m) {
-			tgtProc.Notify(m)
+			tgtProc.Tell(m)
 		}
 
 	} else {
@@ -84,11 +84,6 @@ func onRouter(ev *cellnet.Event) {
 
 func init() {
 
-	actor.OnReset.Add(func(...interface{}) error {
-
-		hijackList = list.New()
-
-		return nil
-	})
+	hijackList = list.New()
 
 }

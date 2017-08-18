@@ -17,7 +17,7 @@ func (self *nexusProcess) PID() *actor.PID {
 	return self.pid
 }
 
-func (self *nexusProcess) Notify(data interface{}) {
+func (self *nexusProcess) Tell(data interface{}) {
 
 	m := data.(*actor.Message)
 

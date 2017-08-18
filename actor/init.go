@@ -3,6 +3,7 @@ package actor
 import (
 	"github.com/davyxu/actornet/proto"
 	"github.com/davyxu/actornet/util"
+	"github.com/davyxu/golog"
 )
 
 var (
@@ -21,15 +22,16 @@ const colorDefine = `
 		{"Text":"#listen","Color":"Blue"},
 		{"Text":"#accepted","Color":"Blue"},
 		{"Text":"#closed","Color":"Blue"},
-		{"Text":"#notify","Color":"White"}
+		{"Text":"#notify","Color":"White"},
+		{"Text":"#spawn","Color":"DarkGreen"}
 	]
 }
 `
 
 func StartSystem() {
 
-	//golog.SetColorDefine("*", colorDefine)
-	//golog.EnableColorLogger("*", true)
+	golog.SetColorDefine("*", colorDefine)
+	golog.EnableColorLogger("*", true)
 
 	OnReset.Invoke()
 
@@ -58,12 +60,6 @@ func LoopSystem() int {
 var inited bool
 
 func init() {
-
-	OnReset.Add(func(...interface{}) error {
-
-		inited = true
-
-		return nil
-	})
+	inited = true
 
 }

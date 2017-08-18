@@ -7,7 +7,7 @@ import (
 )
 
 type Process interface {
-	Notify(interface{})
+	Tell(interface{})
 
 	Stop()
 
@@ -27,7 +27,7 @@ func (self *localProcess) Serialize(ser Serializer) {
 }
 
 func (self *localProcess) notifySystem(data interface{}) {
-	self.Notify(&Message{
+	self.Tell(&Message{
 		Data:      data,
 		SourcePID: self.pid,
 		TargetPID: self.pid,
@@ -58,7 +58,7 @@ func (self *localProcess) PID() *PID {
 	return self.pid
 }
 
-func (self *localProcess) Notify(data interface{}) {
+func (self *localProcess) Tell(data interface{}) {
 
 	if EnableDebug {
 		log.Debugf("#notify %s", data.(Context).String())

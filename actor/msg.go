@@ -5,6 +5,24 @@ import (
 	"github.com/davyxu/goobjfmt"
 )
 
+// 信息上下文
+type Context interface {
+
+	// 消息本体
+	Msg() interface{}
+
+	// 消息来源方，可能为空
+	Source() *PID
+
+	// Actor本体的PID
+	Self() *PID
+
+	// 当对方用Call调用时， 需要用Reply回应
+	Reply(data interface{})
+
+	String() string
+}
+
 type Message struct {
 	Data      interface{}
 	SourcePID *PID
@@ -37,7 +55,7 @@ func (self *Message) String() string {
 
 func (self *Message) Reply(data interface{}) {
 
-	self.SourcePID.ref().Notify(&Message{
+	self.SourcePID.ref().Tell(&Message{
 		Data:      data,
 		TargetPID: self.SourcePID,
 		SourcePID: self.TargetPID,

@@ -56,7 +56,7 @@ func spawn(t *ActorTemplate) *PID {
 
 	pid.proc = proc
 
-	log.Debugf("spawn actor: %s", pid.String())
+	log.Debugf("#spawn actor: %s", pid.String())
 
 	return proc.pid
 }
