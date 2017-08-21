@@ -1,6 +1,7 @@
 package actor
 
 import (
+	"flag"
 	"github.com/davyxu/actornet/proto"
 	"github.com/davyxu/actornet/util"
 	"github.com/davyxu/golog"
@@ -30,8 +31,11 @@ const colorDefine = `
 
 func StartSystem() {
 
-	golog.SetColorDefine("*", colorDefine)
-	golog.EnableColorLogger("*", true)
+	// 非测试环境时, 打开加色
+	if flag.Lookup("test.v") == nil {
+		golog.SetColorDefine("*", colorDefine)
+		golog.EnableColorLogger("*", true)
+	}
 
 	OnReset.Invoke()
 

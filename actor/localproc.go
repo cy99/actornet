@@ -64,7 +64,7 @@ func (self *localProcess) Tell(data interface{}) {
 		log.Debugf("#notify %s", data.(Context).String())
 	}
 
-	self.mailbox.Push(data)
+	self.mailbox.Post(data)
 }
 
 func (self *localProcess) Stop() {
@@ -86,7 +86,7 @@ func (self *localProcess) OnRecv(data interface{}) {
 func newLocalProcess(a Actor, pid *PID) *localProcess {
 
 	self := &localProcess{
-		mailbox: mailbox.NewBounded(10),
+		mailbox: mailbox.NewUnbouned(),
 		a:       a,
 		pid:     pid,
 	}
