@@ -31,6 +31,7 @@ func ReadConsole(callback func(string)) {
 type user struct {
 	target  *actor.PID
 	selfpid *actor.PID
+	lobby   *actor.PID
 }
 
 func (self *user) Send(msg interface{}) {
@@ -41,9 +42,17 @@ func (self *user) Send(msg interface{}) {
 	}
 }
 
+func (self *user) SendToLobby(msg interface{}) {
+	if self.lobby != nil {
+		self.lobby.TellBySender(msg, self.selfpid)
+	} else {
+		log.Errorln("lobby not link")
+	}
+}
+
 func (self *user) PublicChat(text string) {
 
-	self.Send(&chatproto.ChatREQ{
+	self.SendToLobby(&chatproto.ChatREQ{
 		Content: text,
 	})
 }
@@ -61,7 +70,7 @@ func (self *user) OnRecv(c actor.Context) {
 	case *chatproto.LoginACK:
 		self.target = actor.NewPID(msg.User.Domain, msg.User.Id)
 	case *chatproto.ChatACK:
-		log.Infof("%s(%s) say: %s", msg.Name, c.Source().String(), msg.Content)
+		log.Infof("%s(%s) say: %s", msg.Name, msg.User.String(), msg.Content)
 	}
 }
 
@@ -71,11 +80,13 @@ func main() {
 	thisUser := new(user)
 	speaker := actor.NewTemplate().WithID("speaker").WithInstance(thisUser).Spawn()
 
-	nexus.Connect("127.0.0.1:8081", "client")
+	nexus.ConnectMulti("127.0.0.1:8081", "client")
 
 	nexus.WaitReady("server")
 
 	lobby := actor.NewPID("server", "lobby")
+
+	thisUser.lobby = lobby
 
 	lobby.TellBySender(&chatproto.LoginREQ{}, speaker)
 

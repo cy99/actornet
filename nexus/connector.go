@@ -6,8 +6,18 @@ import (
 	"github.com/davyxu/cellnet/socket"
 )
 
+func ConnectSingleton(address string, domain string) {
+
+	con(address, domain, true)
+}
+
+func ConnectMulti(address string, domain string) {
+
+	con(address, domain, false)
+}
+
 // 启动本机的listen
-func Connect(address string, domain string) {
+func con(address string, domain string, singleton bool) {
 
 	peer := socket.NewConnector(nil)
 	peer.Start(address)
@@ -15,21 +25,20 @@ func Connect(address string, domain string) {
 	cellnet.RegisterMessage(peer, "coredef.SessionConnected", func(ev *cellnet.Event) {
 
 		ev.Send(&proto.DomainIdentifyACK{
-			Domain: domain,
+			Domain:    domain,
+			Singleton: singleton,
 		})
 	})
 
 	cellnet.RegisterMessage(peer, "proto.DomainIdentifyACK", func(ev *cellnet.Event) {
 		msg := ev.Msg.(*proto.DomainIdentifyACK)
 
+		broardCast(&proto.NexusOpen{
+			Domain: msg.Domain,
+		})
+
 		addServiceSession(msg.Domain, ev.Ses)
 	})
 
-	cellnet.RegisterMessage(peer, "coredef.SessionClosed", func(ev *cellnet.Event) {
-
-		removeServiceSession(ev.Ses)
-
-	})
-
-	cellnet.RegisterMessage(peer, "proto.RouteACK", onRouter)
+	shareInit(peer)
 }

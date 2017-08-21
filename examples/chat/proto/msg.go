@@ -24,12 +24,18 @@ type ChatREQ struct {
 // 聊天消息
 // server -> client
 type ChatACK struct {
+	User    proto.PID
 	Name    string
 	Content string
+}
+
+type GetName struct {
+	Name string
 }
 
 // 改名
 // client <-> server
 type RenameACK struct {
+
 	NewName string
 }

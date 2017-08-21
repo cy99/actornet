@@ -18,7 +18,7 @@ func TestLinkBackend(t *testing.T) {
 
 	actor.StartSystem()
 
-	nexus.Connect("127.0.0.1:7111", "server")
+	nexus.ConnectSingleton("127.0.0.1:7111", "server")
 
 	var wg sync.WaitGroup
 

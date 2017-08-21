@@ -47,7 +47,7 @@ func TestCrossProcessCallClient(t *testing.T) {
 
 	actor.StartSystem()
 
-	nexus.Connect("127.0.0.1:8081", "client")
+	nexus.ConnectSingleton("127.0.0.1:8081", "client")
 
 	// 等待客户端连接上服务器
 	nexus.WaitReady("server")

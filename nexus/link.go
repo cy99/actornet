@@ -64,14 +64,18 @@ func addServiceSession(domain string, ses cellnet.Session) {
 	log.Infof("Domain attach, domain: %s  sid: %d", domain, ses.ID())
 }
 
-func removeServiceSession(ses cellnet.Session) {
+func removeServiceSession(ses cellnet.Session) string {
 
 	if domain := getDomainBySession(ses); domain != "" {
 
 		log.Infof("Domain detach, domain: %s sid: %d", domain, ses.ID())
 
 		delete(sesByDomain, domain)
+
+		return domain
 	}
+
+	return ""
 }
 
 // 等待服务器连接上

@@ -1,11 +1,23 @@
 package nexus
 
 import (
+	"fmt"
 	"github.com/davyxu/actornet/actor"
 	"github.com/davyxu/actornet/proto"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/socket"
+	"sync/atomic"
 )
+
+var multiInsDomainSeq int64
+
+// 连接上来具备多实例时, 按序号命名
+func multiInstanceDomain(domain string) string {
+
+	id := atomic.AddInt64(&multiInsDomainSeq, 1)
+
+	return fmt.Sprintf("%s_%d", domain, id)
+}
 
 // 启动本机的listen
 func Listen(address string, domain string) {
@@ -22,16 +34,20 @@ func Listen(address string, domain string) {
 			Domain: domain,
 		})
 
-		addServiceSession(msg.Domain, ev.Ses)
+		var remoteDomain string
+		if msg.Singleton {
+			remoteDomain = msg.Domain
+		} else {
+			remoteDomain = multiInstanceDomain(msg.Domain)
+		}
+
+		broardCast(&proto.NexusOpen{
+			Domain: remoteDomain,
+		})
+
+		addServiceSession(remoteDomain, ev.Ses)
 	})
 
-	cellnet.RegisterMessage(peer, "coredef.SessionClosed", func(ev *cellnet.Event) {
-
-		// 其他服务器断开
-		removeServiceSession(ev.Ses)
-
-	})
-
-	cellnet.RegisterMessage(peer, "proto.RouteACK", onRouter)
+	shareInit(peer)
 
 }
