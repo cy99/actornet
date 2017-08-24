@@ -5,7 +5,6 @@ import (
 	"github.com/davyxu/actornet/actor"
 	"github.com/davyxu/actornet/examples/chat/proto"
 	"github.com/davyxu/actornet/nexus"
-	"github.com/davyxu/actornet/proto"
 	"github.com/davyxu/golog"
 	"os"
 	"strings"
@@ -29,14 +28,14 @@ func ReadConsole(callback func(string)) {
 }
 
 type user struct {
-	target  *actor.PID
-	selfpid *actor.PID
-	lobby   *actor.PID
+	actor.LocalProcess
+	target *actor.PID
+	lobby  *actor.PID
 }
 
 func (self *user) Send(msg interface{}) {
 	if self.target != nil {
-		self.target.TellBySender(msg, self.selfpid)
+		self.target.TellBySender(msg, self.PID())
 	} else {
 		log.Errorln("target not link")
 	}
@@ -44,7 +43,7 @@ func (self *user) Send(msg interface{}) {
 
 func (self *user) SendToLobby(msg interface{}) {
 	if self.lobby != nil {
-		self.lobby.TellBySender(msg, self.selfpid)
+		self.lobby.TellBySender(msg, self.PID())
 	} else {
 		log.Errorln("lobby not link")
 	}
@@ -65,8 +64,6 @@ func (self *user) Rename(newName string) {
 
 func (self *user) OnRecv(c actor.Context) {
 	switch msg := c.Msg().(type) {
-	case *proto.Start:
-		self.selfpid = c.Self()
 	case *chatproto.LoginACK:
 		self.target = actor.NewPID(msg.User.Domain, msg.User.Id)
 	case *chatproto.ChatACK:

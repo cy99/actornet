@@ -14,7 +14,7 @@ func main() {
 
 	nexus.Listen("127.0.0.1:8081", "server")
 
-	actor.NewTemplate().WithID("lobby").WithInstance(newLobby()).Spawn()
+	actor.NewTemplate().WithID("lobby").WithCreator(newLobby).Spawn()
 
 	actor.LoopSystem()
 }

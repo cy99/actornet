@@ -45,7 +45,7 @@ func Listen(address string) {
 
 				outboundName := fmt.Sprintf("sid:%d", clientSes.ID())
 
-				outboundPID := actor.NewTemplate().WithID(outboundName).WithInstance(newOutboundClient(clientSes)).Spawn()
+				outboundPID := actor.NewTemplate().WithID(outboundName).WithCreator(newOutboundClient(clientSes)).Spawn()
 
 				addClient(outboundPID, backendPID, clientSes)
 

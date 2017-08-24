@@ -8,27 +8,41 @@ import (
 	"github.com/davyxu/actornet/proto"
 )
 
+type myHelloWorld struct {
+	actor.LocalProcess
+}
+
+func (self *myHelloWorld) callSelf() {
+
+	log.Debugln("self.PID", self.PID())
+}
+
+func (self *myHelloWorld) OnRecv(c actor.Context) {
+	switch msg := c.Msg().(type) {
+	case string:
+		self.callSelf()
+		log.Debugln(msg)
+
+		actor.Exit(0)
+	}
+}
+
+func newHelloWorld() actor.ActorCreator {
+
+	return func() actor.Actor {
+		return &myHelloWorld{}
+	}
+}
+
 func TestHelloWorld(t *testing.T) {
 
 	actor.StartSystem()
 
-	var wg sync.WaitGroup
-
-	wg.Add(1)
-
-	pid := actor.NewTemplate().WithID("hello").WithFunc(func(c actor.Context) {
-
-		switch msg := c.Msg().(type) {
-		case string:
-			log.Debugln(msg)
-			wg.Done()
-		}
-
-	}).Spawn()
+	pid := actor.NewTemplate().WithID("hello").WithCreator(newHelloWorld()).Spawn()
 
 	pid.Tell("hello")
 
-	wg.Wait()
+	actor.LoopSystem()
 }
 
 func TestEcho(t *testing.T) {
@@ -115,6 +129,7 @@ func TestRPC(t *testing.T) {
 }
 
 type myActor struct {
+	actor.LocalProcess
 	hp       int
 	nameList []string
 }
@@ -137,7 +152,9 @@ func TestSerialize(t *testing.T) {
 
 	actor.StartSystem()
 
-	pid := actor.NewTemplate().WithID("hibernate").WithInstance(new(myActor)).Spawn()
+	pid := actor.NewTemplate().WithID("hibernate").WithCreator(func() actor.Actor {
+		return new(myActor)
+	}).Spawn()
 
 	t.Log(actor.Save(pid))
 

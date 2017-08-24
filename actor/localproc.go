@@ -14,7 +14,7 @@ type Process interface {
 	PID() *PID
 }
 
-type localProcess struct {
+type LocalProcess struct {
 	mailbox mailbox.MailBox
 
 	pid *PID
@@ -22,11 +22,11 @@ type localProcess struct {
 	a Actor
 }
 
-func (self *localProcess) Serialize(ser Serializer) {
+func (self *LocalProcess) Serialize(ser Serializer) {
 	self.a.(Serializable).OnSerialize(ser)
 }
 
-func (self *localProcess) notifySystem(data interface{}) {
+func (self *LocalProcess) notifySystem(data interface{}) {
 	self.Tell(&Message{
 		Data:      data,
 		SourcePID: self.pid,
@@ -34,7 +34,7 @@ func (self *localProcess) notifySystem(data interface{}) {
 	})
 }
 
-func (self *localProcess) CreateRPC(waitCallID int64) *util.Future {
+func (self *LocalProcess) CreateRPC(waitCallID int64) *util.Future {
 
 	f := util.NewFuture()
 
@@ -54,11 +54,11 @@ func (self *localProcess) CreateRPC(waitCallID int64) *util.Future {
 	return f
 }
 
-func (self *localProcess) PID() *PID {
+func (self *LocalProcess) PID() *PID {
 	return self.pid
 }
 
-func (self *localProcess) Tell(data interface{}) {
+func (self *LocalProcess) Tell(data interface{}) {
 
 	if EnableDebug {
 		log.Debugf("#notify %s", data.(Context).String())
@@ -67,12 +67,12 @@ func (self *localProcess) Tell(data interface{}) {
 	self.mailbox.Post(data)
 }
 
-func (self *localProcess) Stop() {
+func (self *LocalProcess) Stop() {
 
 	self.notifySystem(&proto.Stop{})
 }
 
-func (self *localProcess) OnRecv(data interface{}) {
+func (self *LocalProcess) OnRecv(data interface{}) {
 
 	ctx := data.(Context)
 
@@ -83,13 +83,11 @@ func (self *localProcess) OnRecv(data interface{}) {
 	self.a.OnRecv(ctx)
 }
 
-func newLocalProcess(a Actor, pid *PID) *localProcess {
+func (self *LocalProcess) Init(a Actor, pid *PID) Process {
 
-	self := &localProcess{
-		mailbox: mailbox.NewUnbouned(),
-		a:       a,
-		pid:     pid,
-	}
+	self.mailbox = mailbox.NewUnbouned()
+	self.a = a
+	self.pid = pid
 
 	self.mailbox.Start(self)
 

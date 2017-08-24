@@ -8,14 +8,14 @@ import (
 )
 
 type lobby struct {
-	userByDomain map[string]*actor.PID
+	actor.LocalProcess
 
-	selfPID *actor.PID
+	userByDomain map[string]*actor.PID
 }
 
 func (self *lobby) Broardcast(data interface{}) {
 
-	self.BroardcastBySender(data, self.selfPID)
+	self.BroardcastBySender(data, self.PID())
 }
 
 func (self *lobby) BroardcastBySender(data interface{}, sender *actor.PID) {
@@ -46,7 +46,6 @@ func (self *lobby) getUser(sourceDomain string) *actor.PID {
 func (self *lobby) OnRecv(c actor.Context) {
 	switch msg := c.Msg().(type) {
 	case *proto.Start:
-		self.selfPID = c.Self()
 
 		// 侦听互联层事件
 		nexus.Watch(c.Self())
@@ -54,7 +53,7 @@ func (self *lobby) OnRecv(c actor.Context) {
 	case *chatproto.LoginREQ:
 
 		// 生成服务器对象pid
-		serverUserPID := actor.NewTemplate().WithInstance(newUser(c.Source())).Spawn()
+		serverUserPID := actor.NewTemplate().WithCreator(newUser(c.Source())).Spawn()
 
 		self.addUser(serverUserPID, c.Source().Domain)
 
@@ -65,7 +64,7 @@ func (self *lobby) OnRecv(c actor.Context) {
 		serverUserPID := self.getUser(c.Source().Domain)
 
 		// 通过rpc获取来源名字
-		name := serverUserPID.Call(&chatproto.GetName{}, self.selfPID).(*chatproto.GetName).Name
+		name := serverUserPID.Call(&chatproto.GetName{}, self.PID()).(*chatproto.GetName).Name
 
 		self.Broardcast(&chatproto.ChatACK{
 			User:    serverUserPID.ToProto(),

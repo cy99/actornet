@@ -7,6 +7,7 @@ import (
 )
 
 type outboundClient struct {
+	actor.LocalProcess
 	ses cellnet.Session
 }
 
@@ -21,8 +22,11 @@ func (self *outboundClient) OnRecv(c actor.Context) {
 
 }
 
-func newOutboundClient(ses cellnet.Session) actor.Actor {
-	return &outboundClient{
-		ses: ses,
+func newOutboundClient(ses cellnet.Session) func() actor.Actor {
+	return func() actor.Actor {
+
+		return &outboundClient{
+			ses: ses,
+		}
 	}
 }
