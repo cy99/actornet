@@ -21,7 +21,7 @@ test.exe -test.v -test.run TestSerialize
 start test.exe -test.v -test.run TestLinkGate
 start test.exe -test.v -test.run TestLinkBackend
 : 防止客户端连接过快
-ping -n 1 127.1>nul
+ping -n 2 127.1>nul
 test.exe -test.v -test.run TestLinkClient
 @IF %ERRORLEVEL% NEQ 0 pause
 ping -n 2 127.1>nul

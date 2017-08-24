@@ -12,9 +12,12 @@ type Process interface {
 	Stop()
 
 	PID() *PID
+
+	Relation
 }
 
 type LocalProcess struct {
+	*RelationImplement
 	mailbox mailbox.MailBox
 
 	pid *PID
@@ -83,7 +86,9 @@ func (self *LocalProcess) OnRecv(data interface{}) {
 	self.a.OnRecv(ctx)
 }
 
-func (self *LocalProcess) Init(a Actor, pid *PID) Process {
+func (self *LocalProcess) Init(a Actor, pid *PID) *LocalProcess {
+
+	self.RelationImplement = NewRelation(self)
 
 	self.mailbox = mailbox.NewUnbouned()
 	self.a = a

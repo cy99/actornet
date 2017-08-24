@@ -8,6 +8,7 @@ import (
 )
 
 type nexusProcess struct {
+	*actor.RelationImplement
 	pid *actor.PID
 
 	hijack func(*actor.Message) bool
@@ -72,8 +73,12 @@ func init() {
 
 	actor.RemoteProcessCreator = func(pid *actor.PID) actor.Process {
 
-		return &nexusProcess{
+		proc := &nexusProcess{
 			pid: pid,
 		}
+
+		proc.RelationImplement = actor.NewRelation(proc)
+
+		return proc
 	}
 }

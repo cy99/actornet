@@ -41,6 +41,10 @@ func (self *PIDManager) GetByID(id string) Process {
 
 func (self *PIDManager) Get(pid *PID) Process {
 
+	if pid == nil {
+		return nil
+	}
+
 	if pid.Domain != self.Domain {
 		return nil
 	}

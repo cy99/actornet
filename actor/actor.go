@@ -6,3 +6,21 @@ type Actor interface {
 }
 
 type ActorCreator func() Actor
+
+type funcActor struct {
+	LocalProcess
+	f func(c Context)
+}
+
+func (self *funcActor) OnRecv(c Context) {
+	self.f(c)
+}
+
+func newFuncActor(f func(c Context)) func() Actor {
+	return func() Actor {
+		return &funcActor{
+			f: f,
+		}
+	}
+
+}

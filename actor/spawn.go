@@ -6,20 +6,17 @@ import (
 	"strconv"
 )
 
-type actorFuncHelper struct {
-	LocalProcess
-	f func(c Context)
-}
-
-func (self *actorFuncHelper) OnRecv(c Context) {
-	self.f(c)
-}
-
 type ActorTemplate struct {
-	id  string
-	ac  ActorCreator
-	ins Actor
-	pid *PID
+	id   string
+	ac   ActorCreator
+	ins  Actor
+	pid  *PID
+	ppid *PID
+}
+
+func (self *ActorTemplate) WithParent(pid *PID) *ActorTemplate {
+	self.ppid = pid
+	return self
 }
 
 func (self *ActorTemplate) WithID(id string) *ActorTemplate {
@@ -38,9 +35,8 @@ func (self *ActorTemplate) WithInstance(a Actor) *ActorTemplate {
 }
 
 func (self *ActorTemplate) WithFunc(f func(c Context)) *ActorTemplate {
-	self.ac = func() Actor {
-		return &actorFuncHelper{f: f}
-	}
+	self.ac = newFuncActor(f)
+
 	return self
 }
 
@@ -82,7 +78,7 @@ func spawn(t *ActorTemplate) *PID {
 	a := t.newActor()
 
 	initor, ok := a.(interface {
-		Init(Actor, *PID) Process
+		Init(Actor, *PID) *LocalProcess
 	})
 
 	if !ok {
@@ -96,6 +92,11 @@ func spawn(t *ActorTemplate) *PID {
 	}
 
 	pid.proc = proc
+
+	pproc := t.ppid.ref()
+	if pproc != nil {
+		pproc.AddChild(pid)
+	}
 
 	log.Debugf("#spawn actor: %s", pid.String())
 

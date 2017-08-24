@@ -30,7 +30,6 @@ func ReadConsole(callback func(string)) {
 type user struct {
 	actor.LocalProcess
 	target *actor.PID
-	lobby  *actor.PID
 }
 
 func (self *user) Send(msg interface{}) {
@@ -42,10 +41,11 @@ func (self *user) Send(msg interface{}) {
 }
 
 func (self *user) SendToLobby(msg interface{}) {
-	if self.lobby != nil {
-		self.lobby.TellBySender(msg, self.PID())
-	} else {
+
+	if self.ParentPID() == nil {
 		log.Errorln("lobby not link")
+	} else {
+		self.ParentPID().TellBySender(msg, self.PID())
 	}
 }
 
@@ -74,16 +74,14 @@ func (self *user) OnRecv(c actor.Context) {
 func main() {
 	actor.StartSystem()
 
-	thisUser := new(user)
-	speaker := actor.NewTemplate().WithID("speaker").WithInstance(thisUser).Spawn()
-
 	nexus.ConnectMulti("127.0.0.1:8081", "client")
 
 	nexus.WaitReady("server")
 
 	lobby := actor.NewPID("server", "lobby")
 
-	thisUser.lobby = lobby
+	thisUser := new(user)
+	speaker := actor.NewTemplate().WithID("speaker").WithInstance(thisUser).WithParent(lobby).Spawn()
 
 	lobby.TellBySender(&chatproto.LoginREQ{}, speaker)
 

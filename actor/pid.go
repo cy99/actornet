@@ -13,6 +13,10 @@ type PID struct {
 }
 
 func (self *PID) IsLocal() bool {
+	if self == nil {
+		return true
+	}
+
 	return LocalPIDManager.Domain == self.Domain
 }
 
@@ -29,6 +33,10 @@ func (self *PID) FromProto(pid proto.PID) {
 }
 
 func (self *PID) ref() Process {
+
+	if self == nil {
+		return nil
+	}
 
 	if self.proc != nil {
 		return self.proc
@@ -73,6 +81,10 @@ func (self *PID) Tell(data interface{}) {
 
 func (self *PID) TellBySender(data interface{}, sender *PID) {
 
+	if self == nil {
+		return
+	}
+
 	self.ref().Tell(&Message{
 		Data:      data,
 		TargetPID: self,
@@ -81,6 +93,10 @@ func (self *PID) TellBySender(data interface{}, sender *PID) {
 }
 
 func (self *PID) Call(data interface{}, sender *PID) interface{} {
+
+	if self == nil {
+		return nil
+	}
 
 	return self.CallFuture(data, sender).Get().(*Message).Data
 }
@@ -105,6 +121,25 @@ func (self *PID) CallFuture(data interface{}, sender *PID) *util.Future {
 	})
 
 	return f
+}
+
+func (self *PID) getLocalProc() *LocalProcess {
+
+	if self == nil {
+		return nil
+	}
+
+	if self.proc == nil {
+		raw := LocalPIDManager.Get(self)
+
+		if raw == nil {
+			return nil
+		}
+
+		return raw.(*LocalProcess)
+	} else {
+		return self.proc.(*LocalProcess)
+	}
 }
 
 func (self *PID) String() string {
