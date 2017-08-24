@@ -11,9 +11,7 @@ var (
 
 func getSeq() int64 {
 
-	atomic.AddInt64(&globalSeq, 1)
-
-	return globalSeq
+	return atomic.AddInt64(&globalSeq, 1)
 }
 
 // 生成可持久化的ID
