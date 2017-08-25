@@ -9,15 +9,13 @@ func shareInit(peer cellnet.Peer) {
 
 	cellnet.RegisterMessage(peer, "coredef.SessionClosed", func(ev *cellnet.Event) {
 
-		// 其他服务器断开
-		if domain := removeServiceSession(ev.Ses); domain != "" {
+		removeDomains(ev.Ses)
+	})
 
-			broardCast(&proto.NexusClose{
-				Domain: domain,
-			})
+	cellnet.RegisterMessage(peer, "proto.DomainSyncACK", func(ev *cellnet.Event) {
+		msg := ev.Msg.(*proto.DomainSyncACK)
 
-		}
-
+		addDomains(msg.DomainNames, ev.Ses)
 	})
 
 	cellnet.RegisterMessage(peer, "proto.RouteACK", onRouter)

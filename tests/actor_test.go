@@ -38,7 +38,9 @@ func TestHelloWorld(t *testing.T) {
 
 	actor.StartSystem()
 
-	pid := actor.NewTemplate().WithID("hello").WithCreator(newHelloWorld()).Spawn()
+	domain := actor.CreateDomain("local")
+
+	pid := domain.Spawn(actor.NewTemplate().WithID("hello").WithCreator(newHelloWorld()))
 
 	pid.Tell("hello")
 
@@ -48,6 +50,8 @@ func TestHelloWorld(t *testing.T) {
 func TestEcho(t *testing.T) {
 
 	actor.StartSystem()
+
+	domain := actor.CreateDomain("local")
 
 	echoFunc := func(c actor.Context) {
 
@@ -63,13 +67,13 @@ func TestEcho(t *testing.T) {
 
 	}
 
-	server := actor.NewTemplate().WithID("server").WithFunc(echoFunc).Spawn()
+	server := domain.Spawn(actor.NewTemplate().WithID("server").WithFunc(echoFunc))
 
 	var wg sync.WaitGroup
 
 	wg.Add(1)
 
-	actor.NewTemplate().WithID("client").WithFunc(func(c actor.Context) {
+	domain.Spawn(actor.NewTemplate().WithID("client").WithFunc(func(c actor.Context) {
 
 		switch data := c.Msg().(type) {
 		case *proto.Start:
@@ -82,7 +86,7 @@ func TestEcho(t *testing.T) {
 			wg.Done()
 		}
 
-	}).Spawn()
+	}))
 
 	wg.Wait()
 }
@@ -90,6 +94,8 @@ func TestEcho(t *testing.T) {
 func TestRPC(t *testing.T) {
 
 	actor.StartSystem()
+
+	domain := actor.CreateDomain("local")
 
 	rpcFunc := func(c actor.Context) {
 
@@ -102,13 +108,13 @@ func TestRPC(t *testing.T) {
 
 	}
 
-	server := actor.NewTemplate().WithID("server").WithFunc(rpcFunc).Spawn()
+	server := domain.Spawn(actor.NewTemplate().WithID("server").WithFunc(rpcFunc))
 
 	var wg sync.WaitGroup
 
 	wg.Add(1)
 
-	actor.NewTemplate().WithID("client").WithFunc(func(c actor.Context) {
+	domain.Spawn(actor.NewTemplate().WithID("client").WithFunc(func(c actor.Context) {
 
 		switch c.Msg().(type) {
 		case *proto.Start:
@@ -123,39 +129,39 @@ func TestRPC(t *testing.T) {
 
 		}
 
-	}).Spawn()
+	}))
 
 	wg.Wait()
 }
 
-type myActor struct {
-	actor.LocalProcess
-	hp       int
-	nameList []string
-}
-
-func (self *myActor) OnRecv(c actor.Context) {
-
-	switch c.Msg().(type) {
-	case *proto.Start:
-		self.hp = 123
-		self.nameList = []string{"genji", "mei"}
-	}
-}
-
-func (self *myActor) OnSerialize(ser actor.Serializer) {
-	ser.Serialize(&self.hp)
-	ser.Serialize(&self.nameList)
-}
-
-func TestSerialize(t *testing.T) {
-
-	actor.StartSystem()
-
-	pid := actor.NewTemplate().WithID("hibernate").WithCreator(func() actor.Actor {
-		return new(myActor)
-	}).Spawn()
-
-	t.Log(actor.Save(pid))
-
-}
+//type myActor struct {
+//	actor.LocalProcess
+//	hp       int
+//	nameList []string
+//}
+//
+//func (self *myActor) OnRecv(c actor.Context) {
+//
+//	switch c.Msg().(type) {
+//	case *proto.Start:
+//		self.hp = 123
+//		self.nameList = []string{"genji", "mei"}
+//	}
+//}
+//
+//func (self *myActor) OnSerialize(ser actor.Serializer) {
+//	ser.Serialize(&self.hp)
+//	ser.Serialize(&self.nameList)
+//}
+//
+//func TestSerialize(t *testing.T) {
+//
+//	actor.StartSystem()
+//
+//	pid := actor.NewTemplate().WithID("hibernate").WithCreator(func() actor.Actor {
+//		return new(myActor)
+//	}).Spawn()
+//
+//	t.Log(actor.Save(pid))
+//
+//}

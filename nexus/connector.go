@@ -1,43 +1,24 @@
 package nexus
 
 import (
-	"github.com/davyxu/actornet/proto"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/socket"
 )
 
 func ConnectSingleton(address string, domain string) {
 
-	con(address, domain, true)
-}
-
-func ConnectMulti(address string, domain string) {
-
-	con(address, domain, false)
+	con(address, domain)
 }
 
 // 启动本机的listen
-func con(address string, domain string, singleton bool) {
+func con(address string, domain string) {
 
 	peer := socket.NewConnector(nil)
 	peer.Start(address)
 
 	cellnet.RegisterMessage(peer, "coredef.SessionConnected", func(ev *cellnet.Event) {
 
-		ev.Send(&proto.DomainIdentifyACK{
-			Domain:    domain,
-			Singleton: singleton,
-		})
-	})
-
-	cellnet.RegisterMessage(peer, "proto.DomainIdentifyACK", func(ev *cellnet.Event) {
-		msg := ev.Msg.(*proto.DomainIdentifyACK)
-
-		broardCast(&proto.NexusOpen{
-			Domain: msg.Domain,
-		})
-
-		addServiceSession(msg.Domain, ev.Ses)
+		sendDomains(ev.Ses)
 	})
 
 	shareInit(peer)

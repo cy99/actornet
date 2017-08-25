@@ -63,7 +63,7 @@ func Status() string {
 
 	buffer.WriteString("\n=========Client Status=========\n")
 
-	acceptor.VisitSession(func(ses cellnet.Session) bool {
+	acceptorPeer.VisitSession(func(ses cellnet.Session) bool {
 
 		backendPID, outboundPID := GetSessionBinding(ses)
 

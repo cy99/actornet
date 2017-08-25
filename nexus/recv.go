@@ -56,9 +56,14 @@ func onRouter(ev *cellnet.Event) {
 		return
 	}
 
-	address := getDomainBySession(ev.Ses)
+	domain := actor.GetDomain(msg.Target.Domain)
 
-	tgtProc := actor.LocalPIDManager.GetByID(msg.TargetID)
+	if domain == nil {
+		log.Errorf("domain not found: %s", msg.Target.Domain)
+		return
+	}
+
+	tgtProc := domain.GetByID(msg.Target.Id)
 
 	if tgtProc != nil {
 
@@ -68,8 +73,8 @@ func onRouter(ev *cellnet.Event) {
 			CallID:    msg.CallID,
 		}
 
-		if msg.SourceID != "" {
-			m.SourcePID = actor.NewPID(address, msg.SourceID)
+		if msg.Source.IsValid() {
+			m.SourcePID = &actor.PID{Domain: msg.Source.Domain, Id: msg.Source.Id}
 		}
 
 		if checkHijack(m) {
@@ -77,7 +82,7 @@ func onRouter(ev *cellnet.Event) {
 		}
 
 	} else {
-		log.Errorf("target not found,  id: %s", msg.TargetID)
+		log.Errorf("target not found,  id: %s", msg.Target.String())
 	}
 
 }

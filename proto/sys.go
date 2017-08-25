@@ -8,6 +8,11 @@ type PID struct {
 	Domain string
 	Id     string
 }
+
+func (self PID) IsValid() bool {
+	return self.Domain != "" || self.Id != ""
+}
+
 // ============================================
 // 系统事件
 // ============================================
@@ -46,15 +51,15 @@ type NexusClose struct {
 
 // 路由到另外一个进程
 type RouteACK struct {
-	SourceID string
-	TargetID string
-	MsgID    uint32
-	MsgData  []byte
-	CallID   int64
+	Source PID
+	Target PID
+
+	MsgID   uint32
+	MsgData []byte
+	CallID  int64
 }
 
 // 领域标识
-type DomainIdentifyACK struct {
-	Domain    string
-	Singleton bool
+type DomainSyncACK struct {
+	DomainNames []string
 }

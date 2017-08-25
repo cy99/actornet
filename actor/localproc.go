@@ -86,9 +86,9 @@ func (self *LocalProcess) OnRecv(data interface{}) {
 	self.a.OnRecv(ctx)
 }
 
-func (self *LocalProcess) Init(a Actor, pid *PID) *LocalProcess {
+func (self *LocalProcess) Init(a Actor, pid *PID, dm *Domain) *LocalProcess {
 
-	self.RelationImplement = NewRelation(self)
+	self.RelationImplement = NewRelation(self, dm)
 
 	self.mailbox = mailbox.NewUnbouned()
 	self.a = a

@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/davyxu/actornet/actor"
 	"github.com/davyxu/actornet/examples/chat/proto"
+	"github.com/davyxu/actornet/gate"
 	"github.com/davyxu/actornet/proto"
 )
 
@@ -22,6 +23,8 @@ func (self *user) OnRecv(c actor.Context) {
 		c.Reply(msg)
 	case *chatproto.ChatREQ:
 
+		log.Debugln("chat", c.Source())
+
 		self.clientpid.Tell(&chatproto.ChatACK{
 			User:    self.PID().ToProto(),
 			Name:    self.name,
@@ -39,10 +42,10 @@ func (self *user) OnRecv(c actor.Context) {
 	}
 }
 
-func newUser(clientpid *actor.PID) actor.ActorCreator {
+func newUser(clientSesID int64) actor.ActorCreator {
 	return func() actor.Actor {
 		return &user{
-			clientpid: clientpid,
+			clientpid: actor.NewPID("gate", gate.MakeOutboundID(clientSesID)),
 		}
 	}
 

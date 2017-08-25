@@ -11,7 +11,9 @@ func main() {
 
 	actor.StartSystem()
 
-	pid := actor.NewTemplate().WithID("hello").WithFunc(func(c actor.Context) {
+	domain := actor.CreateDomain("local")
+
+	pid := domain.Spawn(actor.NewTemplate().WithID("hello").WithFunc(func(c actor.Context) {
 
 		switch msg := c.Msg().(type) {
 		case string:
@@ -20,7 +22,7 @@ func main() {
 			actor.Exit(0)
 		}
 
-	}).Spawn()
+	}))
 
 	pid.Tell("hello world")
 

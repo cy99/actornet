@@ -14,7 +14,7 @@ type outboundClient struct {
 func (self *outboundClient) OnRecv(c actor.Context) {
 
 	switch c.Msg().(type) {
-	case *proto.Start:
+	case *proto.Start: // 防止控制消息传到客户端
 	default:
 		//  后台服务器发送给客户端
 		self.ses.Send(c.Msg())

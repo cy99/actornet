@@ -1,7 +1,6 @@
 package gate
 
 import (
-	"github.com/davyxu/actornet/actor"
 	"github.com/davyxu/actornet/proto"
 	"github.com/davyxu/cellnet"
 )
@@ -28,7 +27,8 @@ func (self *inboundHandler) Call(ev *cellnet.Event) {
 
 			switch ev.Msg.(type) {
 			case *proto.BindClientREQ:
-				backendAssit.TellBySender(&proto.BindClientREQ{ev.Ses.ID()}, receiptor)
+
+				backendAssitPID.TellBySender(&proto.BindClientREQ{ev.Ses.ID()}, receiptorPID)
 			}
 
 		}
@@ -38,12 +38,4 @@ func (self *inboundHandler) Call(ev *cellnet.Event) {
 
 func newInboundHandler() cellnet.EventHandler {
 	return &inboundHandler{}
-}
-
-// 后台的辅助actor
-var backendAssit *actor.PID
-
-func init() {
-
-	backendAssit = actor.NewPID("server", "gate_assit")
 }

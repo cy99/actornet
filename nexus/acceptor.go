@@ -1,23 +1,11 @@
 package nexus
 
 import (
-	"fmt"
 	"github.com/davyxu/actornet/actor"
 	"github.com/davyxu/actornet/proto"
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/socket"
-	"sync/atomic"
 )
-
-var multiInsDomainSeq int64
-
-// 连接上来具备多实例时, 按序号命名
-func multiInstanceDomain(domain string) string {
-
-	id := atomic.AddInt64(&multiInsDomainSeq, 1)
-
-	return fmt.Sprintf("%s_%d", domain, id)
-}
 
 // 启动本机的listen
 func Listen(address string, domain string) {
@@ -25,29 +13,63 @@ func Listen(address string, domain string) {
 	peer := socket.NewAcceptor(nil)
 	peer.Start(address)
 
-	actor.LocalPIDManager.Domain = domain
+	cellnet.RegisterMessage(peer, "coredef.SessionAccepted", func(ev *cellnet.Event) {
 
-	cellnet.RegisterMessage(peer, "proto.DomainIdentifyACK", func(ev *cellnet.Event) {
-		msg := ev.Msg.(*proto.DomainIdentifyACK)
-
-		ev.Send(&proto.DomainIdentifyACK{
-			Domain: domain,
-		})
-
-		var remoteDomain string
-		if msg.Singleton {
-			remoteDomain = msg.Domain
-		} else {
-			remoteDomain = multiInstanceDomain(msg.Domain)
-		}
-
-		broardCast(&proto.NexusOpen{
-			Domain: remoteDomain,
-		})
-
-		addServiceSession(remoteDomain, ev.Ses)
+		sendDomains(ev.Ses)
 	})
 
 	shareInit(peer)
+
+}
+
+func sendDomains(ses cellnet.Session) {
+
+	var msg proto.DomainSyncACK
+
+	actor.VisitDomains(func(domain *actor.Domain) bool {
+
+		msg.DomainNames = append(msg.DomainNames, domain.Name)
+
+		return true
+	})
+
+	ses.Send(&msg)
+
+}
+
+func addDomains(domainNames []string, ses cellnet.Session) {
+
+	for _, name := range domainNames {
+
+		if actor.GetDomain(name) != nil {
+			log.Errorf("Duplicate remote domain: %s", name)
+			continue
+		}
+
+		domain := actor.CreateRemoteDomain(name)
+		domain.RemoteContext = ses
+	}
+
+}
+
+func removeDomains(ses cellnet.Session) {
+
+	var removeNames []string
+	actor.VisitDomains(func(domain *actor.Domain) bool {
+
+		if domain.RemoteContext != nil {
+
+			if domain.RemoteContext.(cellnet.Session) == ses {
+				removeNames = append(removeNames, domain.Name)
+			}
+
+		}
+
+		return true
+	})
+
+	for _, name := range removeNames {
+		actor.DestroyDomain(name)
+	}
 
 }

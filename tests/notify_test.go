@@ -13,13 +13,15 @@ func TestCrossProcessNotifyServer(t *testing.T) {
 
 	actor.StartSystem()
 
+	domain := actor.CreateDomain("server")
+
 	nexus.Listen("127.0.0.1:8081", "server")
 
 	var wg sync.WaitGroup
 
 	wg.Add(1)
 
-	actor.NewTemplate().WithID("echo").WithFunc(func(c actor.Context) {
+	domain.Spawn(actor.NewTemplate().WithID("echo").WithFunc(func(c actor.Context) {
 
 		switch msg := c.Msg().(type) {
 		case *proto.TestMsgACK:
@@ -36,7 +38,7 @@ func TestCrossProcessNotifyServer(t *testing.T) {
 			}
 		}
 
-	}).Spawn()
+	}))
 
 	wg.Wait()
 
@@ -48,6 +50,8 @@ func TestCrossProcessNotifyClient(t *testing.T) {
 
 	actor.StartSystem()
 
+	domain := actor.CreateDomain("client")
+
 	nexus.ConnectSingleton("127.0.0.1:8081", "client")
 
 	// 等待客户端连接上服务器
@@ -57,7 +61,7 @@ func TestCrossProcessNotifyClient(t *testing.T) {
 
 	wg.Add(1)
 
-	client := actor.NewTemplate().WithID("client").WithFunc(func(c actor.Context) {
+	client := domain.Spawn(actor.NewTemplate().WithID("client").WithFunc(func(c actor.Context) {
 
 		switch msg := c.Msg().(type) {
 		case *proto.TestMsgACK:
@@ -68,7 +72,7 @@ func TestCrossProcessNotifyClient(t *testing.T) {
 
 		}
 
-	}).Spawn()
+	}))
 
 	target := actor.NewPID("server", "echo")
 	target.TellBySender(proto.TestMsgACK{Msg: "hello"}, client)

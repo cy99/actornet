@@ -18,6 +18,8 @@ func TestLinkBackend(t *testing.T) {
 
 	actor.StartSystem()
 
+	domain := actor.CreateDomain("backend")
+
 	nexus.ConnectSingleton("127.0.0.1:7111", "server")
 
 	var wg sync.WaitGroup
@@ -48,11 +50,23 @@ func TestLinkBackend(t *testing.T) {
 
 	}
 
-	gate.StartBackend(func() *actor.PID {
+	domain.Spawn(actor.NewTemplate().WithID("lobby").WithFunc(func(c actor.Context) {
 
-		return actor.NewTemplate().WithFunc(onRouteMsg).Spawn()
+		switch msg := c.Msg().(type) {
+		case *proto.BindClientREQ:
 
-	})
+			log.Debugln("bind", c.Source())
+
+			pid := domain.Spawn(actor.NewTemplate().WithFunc(onRouteMsg))
+
+			c.Reply(&proto.BindClientACK{
+				ClientSessionID: msg.ClientSessionID,
+				ID:              pid.Id,
+			})
+
+		}
+
+	}))
 
 	wg.Wait()
 
@@ -67,7 +81,7 @@ func TestLinkGate(t *testing.T) {
 
 	nexus.Listen("127.0.0.1:7111", "gate")
 
-	gate.Listen("127.0.0.1:8031")
+	gate.Listen("127.0.0.1:8031", actor.NewPID("backend", "lobby"))
 
 	actor.LoopSystem()
 

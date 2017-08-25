@@ -8,17 +8,17 @@ import (
 	"reflect"
 )
 
-func (self *TestMsgACK) String() string        { return goobjfmt.CompactTextString(self) }
-func (self *BindClientREQ) String() string     { return goobjfmt.CompactTextString(self) }
-func (self *BindClientACK) String() string     { return goobjfmt.CompactTextString(self) }
-func (self *PID) String() string               { return goobjfmt.CompactTextString(self) }
-func (self *Start) String() string             { return goobjfmt.CompactTextString(self) }
-func (self *Stop) String() string              { return goobjfmt.CompactTextString(self) }
-func (self *SystemExit) String() string        { return goobjfmt.CompactTextString(self) }
-func (self *NexusOpen) String() string         { return goobjfmt.CompactTextString(self) }
-func (self *NexusClose) String() string        { return goobjfmt.CompactTextString(self) }
-func (self *RouteACK) String() string          { return goobjfmt.CompactTextString(self) }
-func (self *DomainIdentifyACK) String() string { return goobjfmt.CompactTextString(self) }
+func (self *TestMsgACK) String() string    { return goobjfmt.CompactTextString(self) }
+func (self *BindClientREQ) String() string { return goobjfmt.CompactTextString(self) }
+func (self *BindClientACK) String() string { return goobjfmt.CompactTextString(self) }
+func (self *PID) String() string           { return goobjfmt.CompactTextString(self) }
+func (self *Start) String() string         { return goobjfmt.CompactTextString(self) }
+func (self *Stop) String() string          { return goobjfmt.CompactTextString(self) }
+func (self *SystemExit) String() string    { return goobjfmt.CompactTextString(self) }
+func (self *NexusOpen) String() string     { return goobjfmt.CompactTextString(self) }
+func (self *NexusClose) String() string    { return goobjfmt.CompactTextString(self) }
+func (self *RouteACK) String() string      { return goobjfmt.CompactTextString(self) }
+func (self *DomainSyncACK) String() string { return goobjfmt.CompactTextString(self) }
 
 func init() {
 
@@ -32,5 +32,5 @@ func init() {
 	cellnet.RegisterMessageMeta("binary", "proto.NexusOpen", reflect.TypeOf((*NexusOpen)(nil)).Elem(), 2848479583)
 	cellnet.RegisterMessageMeta("binary", "proto.NexusClose", reflect.TypeOf((*NexusClose)(nil)).Elem(), 801786219)
 	cellnet.RegisterMessageMeta("binary", "proto.RouteACK", reflect.TypeOf((*RouteACK)(nil)).Elem(), 892591827)
-	cellnet.RegisterMessageMeta("binary", "proto.DomainIdentifyACK", reflect.TypeOf((*DomainIdentifyACK)(nil)).Elem(), 3151462984)
+	cellnet.RegisterMessageMeta("binary", "proto.DomainSyncACK", reflect.TypeOf((*DomainSyncACK)(nil)).Elem(), 569474085)
 }

@@ -14,6 +14,12 @@ type RelationImplement struct {
 	childs []*PID // 子级
 
 	proc Process
+
+	dm *Domain
+}
+
+func (self *RelationImplement) Domain() *Domain {
+	return self.dm
 }
 
 func (self *RelationImplement) ParentPID() *PID {
@@ -37,8 +43,9 @@ func (self *RelationImplement) AddChild(pid *PID) {
 	self.childs = append(self.childs, pid)
 }
 
-func NewRelation(proc Process) *RelationImplement {
+func NewRelation(proc Process, dm *Domain) *RelationImplement {
 	return &RelationImplement{
 		proc: proc,
+		dm:   dm,
 	}
 }

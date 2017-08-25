@@ -9,15 +9,7 @@ type PID struct {
 	Domain string
 	Id     string
 
-	proc Process `binary:"-" text:"-"`
-}
-
-func (self *PID) IsLocal() bool {
-	if self == nil {
-		return true
-	}
-
-	return LocalPIDManager.Domain == self.Domain
+	proc Process
 }
 
 func (self *PID) ToProto() proto.PID {
@@ -42,36 +34,23 @@ func (self *PID) ref() Process {
 		return self.proc
 	}
 
-	if self.IsLocal() {
+	dm := MustGetDomain(self.Domain)
 
-		p := LocalPIDManager.GetByID(self.Id)
-		if p != nil {
-			self.proc = p
-			return p
-		}
-
-	} else if RemoteProcessCreator != nil {
-
-		mgr := remotePIDManager(self.Domain)
-
-		proc := mgr.GetByID(self.Id)
-
-		if proc == nil {
-			proc = RemoteProcessCreator(self)
-
-			if err := mgr.Add(proc); err != nil {
-				panic(err)
-			}
-		}
-
-		self.proc = proc
-
-		return proc
+	p := dm.GetByID(self.Id)
+	if p != nil {
+		self.proc = p
+		return p
 	}
 
-	panic("invalid pid to create process")
+	proc := RemoteProcessCreator(self, dm)
 
-	return nil
+	if err := dm.Add(proc); err != nil {
+		panic(err)
+	}
+
+	self.proc = proc
+
+	return proc
 }
 
 func (self *PID) Tell(data interface{}) {
@@ -123,25 +102,6 @@ func (self *PID) CallFuture(data interface{}, sender *PID) *util.Future {
 	return f
 }
 
-func (self *PID) getLocalProc() *LocalProcess {
-
-	if self == nil {
-		return nil
-	}
-
-	if self.proc == nil {
-		raw := LocalPIDManager.Get(self)
-
-		if raw == nil {
-			return nil
-		}
-
-		return raw.(*LocalProcess)
-	} else {
-		return self.proc.(*LocalProcess)
-	}
-}
-
 func (self *PID) String() string {
 	if self == nil {
 		return "nil"
@@ -151,27 +111,10 @@ func (self *PID) String() string {
 
 func NewPID(domain, id string) *PID {
 
-	// 是本地pid时, 直接取已经存在的进程, 避免同地址pid指针不同
-	if domain == LocalPIDManager.Domain {
-		return NewLocalPID(id)
-	}
-
 	return &PID{
 		Domain: domain,
 		Id:     id,
 	}
 }
 
-func NewLocalPID(id string) *PID {
-
-	if proc := LocalPIDManager.GetByID(id); proc != nil {
-		return proc.PID()
-	}
-
-	return &PID{
-		Domain: LocalPIDManager.Domain,
-		Id:     id,
-	}
-}
-
-var RemoteProcessCreator func(*PID) Process
+var RemoteProcessCreator func(*PID, *Domain) Process

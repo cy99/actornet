@@ -33,14 +33,14 @@ func (self *nexusProcess) Tell(data interface{}) {
 	}
 
 	msg := &proto.RouteACK{
-		TargetID: self.pid.Id,
-		MsgID:    msgid,
-		MsgData:  msgdata,
-		CallID:   m.CallID,
+		Target:  self.pid.ToProto(),
+		MsgID:   msgid,
+		MsgData: msgdata,
+		CallID:  m.CallID,
 	}
 
 	if m.SourcePID != nil {
-		msg.SourceID = m.SourcePID.Id
+		msg.Source = m.SourcePID.ToProto()
 	}
 
 	sendToDomain(self.pid.Domain, msg)
@@ -71,13 +71,13 @@ func (self *nexusProcess) CreateRPC(waitCallID int64) *util.Future {
 
 func init() {
 
-	actor.RemoteProcessCreator = func(pid *actor.PID) actor.Process {
+	actor.RemoteProcessCreator = func(pid *actor.PID, dm *actor.Domain) actor.Process {
 
 		proc := &nexusProcess{
 			pid: pid,
 		}
 
-		proc.RelationImplement = actor.NewRelation(proc)
+		proc.RelationImplement = actor.NewRelation(proc, dm)
 
 		return proc
 	}

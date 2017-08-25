@@ -17,6 +17,8 @@ type Context interface {
 	// Actor本体的PID
 	Self() *PID
 
+	Parent() *PID
+
 	// 当对方用Call调用时， 需要用Reply回应
 	Reply(data interface{})
 
@@ -40,6 +42,10 @@ func (self *Message) Source() *PID {
 
 func (self *Message) Self() *PID {
 	return self.TargetPID
+}
+
+func (self *Message) Parent() *PID {
+	return self.TargetPID.ref().ParentPID()
 }
 
 func (self *Message) String() string {

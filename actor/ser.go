@@ -1,9 +1,5 @@
 package actor
 
-import (
-	"bytes"
-)
-
 type Serializable interface {
 	OnSerialize(Serializer)
 }
@@ -18,25 +14,26 @@ type Serializer interface {
 
 func Save(pid *PID) []byte {
 
-	proc := LocalPIDManager.Get(pid)
-
-	ser := NewBinaryWriter()
-
-	proc.(interface {
-		Serialize(ser Serializer)
-	}).Serialize(ser)
-
-	return ser.Bytes()
+	return nil
+	//proc := LocalPIDManager.Get(pid)
+	//
+	//ser := NewBinaryWriter()
+	//
+	//proc.(interface {
+	//	Serialize(ser Serializer)
+	//}).Serialize(ser)
+	//
+	//return ser.Bytes()
 }
 
 func Load(pid *PID, data []byte) {
 
-	proc := LocalPIDManager.Get(pid)
-
-	ser := NewBinaryReader(bytes.NewReader(data))
-
-	proc.(interface {
-		Serialize(ser Serializer)
-	}).Serialize(ser)
+	//proc := LocalPIDManager.Get(pid)
+	//
+	//ser := NewBinaryReader(bytes.NewReader(data))
+	//
+	//proc.(interface {
+	//	Serialize(ser Serializer)
+	//}).Serialize(ser)
 
 }

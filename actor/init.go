@@ -2,7 +2,6 @@ package actor
 
 import (
 	"flag"
-	"github.com/davyxu/actornet/proto"
 	"github.com/davyxu/actornet/util"
 	"github.com/davyxu/golog"
 )
@@ -41,14 +40,6 @@ func StartSystem() {
 
 	exitSignal = make(chan int)
 
-	NewTemplate().WithID("system").WithFunc(func(c Context) {
-
-		switch msg := c.Msg().(type) {
-		case *proto.SystemExit:
-			Exit(int(msg.Code))
-		}
-
-	}).Spawn()
 }
 
 // 退出

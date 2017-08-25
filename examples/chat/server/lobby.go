@@ -3,8 +3,6 @@ package main
 import (
 	"github.com/davyxu/actornet/actor"
 	"github.com/davyxu/actornet/examples/chat/proto"
-	"github.com/davyxu/actornet/nexus"
-	"github.com/davyxu/actornet/proto"
 )
 
 type lobby struct {
@@ -45,19 +43,6 @@ func (self *lobby) getUser(sourceDomain string) *actor.PID {
 
 func (self *lobby) OnRecv(c actor.Context) {
 	switch msg := c.Msg().(type) {
-	case *proto.Start:
-
-		// 侦听互联层事件
-		nexus.Watch(c.Self())
-
-	case *chatproto.LoginREQ:
-
-		// 生成服务器对象pid
-		serverUserPID := actor.NewTemplate().WithCreator(newUser(c.Source())).Spawn()
-
-		self.addUser(serverUserPID, c.Source().Domain)
-
-		serverUserPID.Tell(&chatproto.LoginACK{User: serverUserPID.ToProto()})
 
 	case *chatproto.ChatREQ:
 
@@ -71,8 +56,6 @@ func (self *lobby) OnRecv(c actor.Context) {
 			Name:    name,
 			Content: msg.Content,
 		})
-	case *proto.NexusClose:
-		self.removeUser(msg.Domain)
 	}
 }
 
